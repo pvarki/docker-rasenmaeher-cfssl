@@ -25,7 +25,7 @@ RUN mkdir -p /opt/cfssl/persistent/certdb/sqlite/migrations
 # cd "/opt/cfssl/persistent/certdb/sqlite/migrations" ; wget https://raw.githubusercontent.com/cloudflare/cfssl/master/certdb/sqlite/migrations/002_AddMetadataToCertificates.sql
 
 
- 
+
 
 ENTRYPOINT ["/bin/bash"]
 CMD ["/docker-entrypoint.sh"]

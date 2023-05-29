@@ -1,1 +1,4 @@
-{"driver":"sqlite3","data_source":"certstore_development.db"}
+{
+  "data_source": "certstore_development.db",
+  "driver": "sqlite3"
+}
