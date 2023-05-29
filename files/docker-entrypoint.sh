@@ -24,8 +24,16 @@ INIT_CA_CONFIG_JSON_FILE="${INIT_CA_CONFIG_JSON_FILE:-/opt/cfssl/template/root_c
 INIT_INTER_CA_JSON_FILE="${INIT_INTER_CA_JSON_FILE:-/opt/cfssl/template/base_inter_ca_conf.json}" 
 INIT_INTER_CA_JSON_STRING="${INIT_INTER_CA_JSON_STRING:-NA}"
 
+# Alternative goose init config files can be changed using these.
+INIT_GOOSE_DBJSON_FILE="${INIT_GOOSE_DBJSON_FILE:-NA}"
+INIT_GOOSE_DBCONF_FILE="${INIT_GOOSE_DBCONF_FILE:-NA}"
+INIT_GOOSE_CREATECERTIFICATES_SQL_FILE="${INIT_GOOSE_CREATECERTIFICATES_SQL_FILE:-NA}" 
+INIT_GOOSE_ADDMETADATA_SQL_FILE="${INIT_GOOSE_ADDMETADATA_SQL_FILE:-NA}" 
 
-# If the CA file doesn't exists, run init procedures
+
+#
+# Run certificate init procedures if the CA file doesn't exists
+#
 if [[ ! -f "${RUN_CA}" ]]
 then
     echo "$(date) --- Init CA certificates"
@@ -117,10 +125,55 @@ then
 
 fi
 
-pushd "${CFSLL_PERSISTENT_FOLDER}" > /dev/null
-echo "$(date) --- Running 'cfssl serve'"
-cfssl serve -ca "${RUN_INTER_CA}" -ca-key "${RUN_INTER_CA_KEY}" 
 
+#
+# Run goose init (copy files), use alternative files if one is defined in env vars... 
+#
+if [[ ! -f "${CFSLL_PERSISTENT_FOLDER}/certdb/sqlite/dbconf.yml" ]]
+then 
+    echo "$(date) --- running first time goose init tasks..."
+    if [ "$INIT_GOOSE_DBJSON_FILE" != "NA" ]
+    then 
+        cp "${INIT_GOOSE_DBJSON_FILE}" "${CFSLL_PERSISTENT_FOLDER}/db.json"
+    else
+        cp "/opt/cfssl/template/goose/db.json" "${CFSLL_PERSISTENT_FOLDER}/db.json"
+    fi
+
+    if [ "${INIT_GOOSE_DBCONF_FILE}" != "NA" ]
+    then
+        cp "${INIT_GOOSE_DBCONF_FILE}" "${CFSLL_PERSISTENT_FOLDER}/certdb/sqlite/dbconf.yml"
+    else
+        cp "/opt/cfssl/template/goose/dbconf.yml" "${CFSLL_PERSISTENT_FOLDER}/certdb/sqlite/dbconf.yml"
+    fi
+    
+    if [ "${INIT_GOOSE_CREATECERTIFICATES_SQL_FILE}" != "NA" ]
+    then
+        cp "${INIT_GOOSE_CREATECERTIFICATES_SQL_FILE}" "${CFSLL_PERSISTENT_FOLDER}/certdb/sqlite/migrations/001_CreateCertificates.sql"
+    else
+        cp "/opt/cfssl/template/goose/001_CreateCertificates.sql" "${CFSLL_PERSISTENT_FOLDER}/certdb/sqlite/migrations/001_CreateCertificates.sql"
+    fi
+
+    if [ "${INIT_GOOSE_ADDMETADATA_SQL_FILE}" != "NA" ]
+    then
+        cp "${INIT_GOOSE_ADDMETADATA_SQL_FILE}" "${CFSLL_PERSISTENT_FOLDER}/certdb/sqlite/migrations/002_AddMetadataToCertificates.sql"
+    else
+        cp "/opt/cfssl/template/goose/002_AddMetadataToCertificates.sql" "${CFSLL_PERSISTENT_FOLDER}/certdb/sqlite/migrations/002_AddMetadataToCertificates.sql"
+    fi
+
+fi
+
+
+#
+# Run cfssl services
+#
+pushd "${CFSLL_PERSISTENT_FOLDER}" > /dev/null
+echo "$(date) --- Starting sqlite goose addong"
+goose -path certdb/sqlite up
+echo "$(date) --- Running 'cfssl serve'"
+cfssl serve -ca "${RUN_INTER_CA}" -ca-key "${RUN_INTER_CA_KEY}" -db-config "${CFSLL_PERSISTENT_FOLDER}/db.json"
+
+#
 # Exit/restart/crash
+#
 echo "$(date) --- docker-entrypoint.sh finished" 
 
