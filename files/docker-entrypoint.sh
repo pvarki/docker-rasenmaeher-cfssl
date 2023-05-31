@@ -3,15 +3,15 @@ set -e
 
 
 # CA Cert key and config filen path
-CFSLL_PERSISTENT_FOLDER="${CFSLL_PERSISTENT_FOLDER:-/opt/cfssl/persistent}"
-RUN_CA="${RUN_CA:-/opt/cfssl/persistent/ca.pem}"
-RUN_CA_KEY="${RUN_CA_KEY:-/opt/cfssl/persistent/ca_key.pem}"
-RUN_CA_CONF="${RUN_CA_CONF:-/opt/cfssl/persistent/ca_conf.json}"
-RUN_CA_CFSSL_CONF="${RUN_CA_CFSSL_CONF:-/opt/cfssl/persistent/root_ca_cfssl.json}"
+CFSLL_PERSISTENT_FOLDER="${CFSLL_PERSISTENT_FOLDER:-/data/persistent}"
+RUN_CA="${RUN_CA:-/data/persistent/ca.pem}"
+RUN_CA_KEY="${RUN_CA_KEY:-/data/persistent/ca_key.pem}"
+RUN_CA_CONF="${RUN_CA_CONF:-/data/persistent/ca_conf.json}"
+RUN_CA_CFSSL_CONF="${RUN_CA_CFSSL_CONF:-/data/persistent/root_ca_cfssl.json}"
 
-RUN_INTER_CA="${RUN_INTER_CA:-/opt/cfssl/persistent/inter-ca.pem}"
-RUN_INTER_CA_KEY="${RUN_INTER_CA_KEY:-/opt/cfssl/persistent/inter-ca_key.pem}"
-RUN_INTER_CA_CONF="${RUN_INTER_CA_CONF:-/opt/cfssl/persistent/inter-ca_conf.json}"
+RUN_INTER_CA="${RUN_INTER_CA:-/data/persistent/inter-ca.pem}"
+RUN_INTER_CA_KEY="${RUN_INTER_CA_KEY:-/data/persistent/inter-ca_key.pem}"
+RUN_INTER_CA_CONF="${RUN_INTER_CA_CONF:-/data/persistent/inter-ca_conf.json}"
 
 # Root CA CSR config either in file or json string
 # This configuration file contains "CSR" information.
@@ -30,6 +30,7 @@ INIT_GOOSE_DBCONF_FILE="${INIT_GOOSE_DBCONF_FILE:-NA}"
 INIT_GOOSE_CREATECERTIFICATES_SQL_FILE="${INIT_GOOSE_CREATECERTIFICATES_SQL_FILE:-NA}"
 INIT_GOOSE_ADDMETADATA_SQL_FILE="${INIT_GOOSE_ADDMETADATA_SQL_FILE:-NA}"
 
+INT_SHARED_CERT_FOLDER="${INT_SHARED_CERT_FOLDER:-/ca_public}"
 
 #
 # Run certificate init procedures if the CA file doesn't exists
@@ -37,6 +38,7 @@ INIT_GOOSE_ADDMETADATA_SQL_FILE="${INIT_GOOSE_ADDMETADATA_SQL_FILE:-NA}"
 if [[ ! -f "${RUN_CA}" ]]
 then
     echo "$(date) --- Init CA certificates"
+    mkdir -p "${CFSLL_PERSISTENT_FOLDER}"
 
     # Check the CA config source. It's either json string or file and copy it to place
     if [ "$INIT_CA_JSON_STRING" != "NA" ]
@@ -91,7 +93,6 @@ then
             echo "$(date) --- ERROR - INIT_INTER_CA_JSON_FILE doesnt contain valid JSON"
             exit
         fi
-
     fi
 
     if cat "$INIT_CA_CONFIG_JSON_FILE" | jq > /dev/null
@@ -132,6 +133,8 @@ fi
 if [[ ! -f "${CFSLL_PERSISTENT_FOLDER}/certdb/sqlite/dbconf.yml" ]]
 then
     echo "$(date) --- running first time goose init tasks..."
+    mkdir -p "${CFSLL_PERSISTENT_FOLDER}/certdb/sqlite/migrations"
+
     if [ "$INIT_GOOSE_DBJSON_FILE" != "NA" ]
     then
         cp "${INIT_GOOSE_DBJSON_FILE}" "${CFSLL_PERSISTENT_FOLDER}/db.json"
@@ -162,6 +165,17 @@ then
 
 fi
 
+#
+# Copy public certificates to shared folder
+#
+
+if [[ -f "${INT_SHARED_CERT_FOLDER}" ]]
+then
+    # Copy temporary CA files to persistent path
+    cp "${RUN_CA}" "${INT_SHARED_CERT_FOLDER}/"
+    cp "${RUN_INTER_CA}" "${INT_SHARED_CERT_FOLDER}/"
+    cat "${RUN_CA}" "${RUN_INTER_CA}" >> "${INT_SHARED_CERT_FOLDER}/ca_chain.pem"
+fi
 
 #
 # Run cfssl services
