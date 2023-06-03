@@ -169,7 +169,7 @@ fi
 # Copy public certificates to shared folder
 #
 
-if [[ -f "${INT_SHARED_CERT_FOLDER}" ]]
+if [[ -d "${INT_SHARED_CERT_FOLDER}" ]]
 then
     # Copy temporary CA files to persistent path
     cp "${RUN_CA}" "${INT_SHARED_CERT_FOLDER}/"
