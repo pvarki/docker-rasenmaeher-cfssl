@@ -184,7 +184,7 @@ pushd "${CFSLL_PERSISTENT_FOLDER}" > /dev/null
 echo "$(date) --- Starting sqlite goose addong"
 goose -path certdb/sqlite up
 echo "$(date) --- Running 'cfssl serve'"
-cfssl serve -ca "${RUN_INTER_CA}" -ca-key "${RUN_INTER_CA_KEY}" -db-config "${CFSLL_PERSISTENT_FOLDER}/db.json"
+cfssl serve -address 0.0.0.0 -ca "${RUN_INTER_CA}" -ca-key "${RUN_INTER_CA_KEY}" -db-config "${CFSLL_PERSISTENT_FOLDER}/db.json"
 
 #
 # Exit/restart/crash
