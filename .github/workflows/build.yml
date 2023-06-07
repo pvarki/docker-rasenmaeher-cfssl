@@ -8,7 +8,5 @@ jobs:
       runs-on: ubuntu-latest
       steps:
       - uses: actions/checkout@v3
-      - run: sudo apt-get install curl
       - run: docker build -t rasenmaeher_cfssl .
-      - run: docker run -d -p 8888:8888 rasenmaeher_cfssl
-      - run: curl http://localhost:8888
+      - run: docker run -d -p 8888:8888 rasenmaeher_cfssl && curl http://localhost:8888
