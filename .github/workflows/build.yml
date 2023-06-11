@@ -10,5 +10,6 @@ jobs:
       - uses: actions/checkout@v3
       - run: docker build -t rasenmaeher_cfssl .
       - run: docker run -d -p 8888:8888 --name rasenmaeher_cfssl rasenmaeher_cfssl
-      - run: sleep 30 && docker logs rasenmaeher_cfssl
-      - run: curl http://localhost:8888
+      - run: sleep 60 && docker logs rasenmaeher_cfssl
+      - run: echo 'print whole trace' && curl http://localhost:8888
+      - run: echo 'verify cfssl title' && curl http://localhost:8888 | grep '<title>CFSSL</title>'
