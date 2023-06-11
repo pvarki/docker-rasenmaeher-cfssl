@@ -1,3 +1,5 @@
+![Build Status](https://github.com/pvarki/docker-rasenmaeher-cfssl/actions/workflows/build.yml/badge.svg)
+
 # docker-tilauspalvelu-cfssl
 
 ## Used as git submodule
