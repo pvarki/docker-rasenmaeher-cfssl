@@ -9,4 +9,4 @@ jobs:
       steps:
       - uses: actions/checkout@v3
       - run: docker build -t rasenmaeher_cfssl .
-      - run: docker run -d -p 8888:8888 rasenmaeher_cfssl && curl --connect-timeout 20 http://localhost:8888
+      - run: docker run -d -p 8888:8888 --name rasenmaeher_cfssl rasenmaeher_cfssl && docker logs rasenmaeher_cfssl && curl --connect-timeout 20 http://localhost:8888
