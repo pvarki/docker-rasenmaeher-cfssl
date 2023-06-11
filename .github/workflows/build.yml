@@ -9,4 +9,6 @@ jobs:
       steps:
       - uses: actions/checkout@v3
       - run: docker build -t rasenmaeher_cfssl .
-      - run: docker run -d -p 8888:8888 --name rasenmaeher_cfssl rasenmaeher_cfssl && sleep 30 && watch -n 1 'docker logs rasenmaeher_cfssl > ./temp.out; cat ./temp.out; grep "Now listening on" ./temp.out; if [ $? -eq 0 ]; then kill `pidof watch` ; fi' && curl http://localhost:8888
+      - run: docker run -d -p 8888:8888 --name rasenmaeher_cfssl rasenmaeher_cfssl
+      - run: sleep 30 && docker logs rasenmaeher_cfssl
+      - run: curl http://localhost:8888
