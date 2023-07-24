@@ -1,6 +1,8 @@
 #!/bin/bash
 set -e
 
+CFSSL_BIND_ADDRESS="${CFSSL_BIND_ADDRESS:-0.0.0.0}"
+CFSSL_BIND_PORT="${CFSSL_BIND_PORT:-8888}"
 
 # CA Cert key and config filen path
 CFSLL_PERSISTENT_FOLDER="${CFSLL_PERSISTENT_FOLDER:-/data/persistent}"
@@ -184,7 +186,7 @@ pushd "${CFSLL_PERSISTENT_FOLDER}" > /dev/null
 echo "$(date) --- Starting sqlite goose addong"
 goose -path certdb/sqlite up
 echo "$(date) --- Running 'cfssl serve'"
-cfssl serve -address 0.0.0.0 -ca "${RUN_INTER_CA}" -ca-key "${RUN_INTER_CA_KEY}" -db-config "${CFSLL_PERSISTENT_FOLDER}/db.json"
+cfssl serve -address=$CFSSL_BIND_ADDRESS -port $CFSSL_BIND_PORT -ca "${RUN_INTER_CA}" -ca-key "${RUN_INTER_CA_KEY}" -db-config "${CFSLL_PERSISTENT_FOLDER}/db.json"
 
 #
 # Exit/restart/crash
