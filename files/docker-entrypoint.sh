@@ -1,5 +1,5 @@
 #!/usr/bin/env -S /bin/bash
-set -ex
+set -e
 . /container-env.sh
 if [ "$#" -eq 0 ]; then
   if [ "$CFSSL_MODE" == "api" ]; then

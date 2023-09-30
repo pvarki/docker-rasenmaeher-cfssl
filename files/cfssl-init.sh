@@ -1,5 +1,5 @@
 #!/usr/bin/env -S /bin/bash
-set -ex
+set -e
 
 . /container-env.sh
 #

@@ -13,7 +13,9 @@ echo "$(date) --- Running 'cfssl serve'"
 cfssl serve -address=$CFSSL_BIND_ADDRESS -port $CFSSL_BIND_PORT \
   -ca "${RUN_INTER_CA}" -ca-key "${RUN_INTER_CA_KEY}" \
   -db-config "${CFSSL_PERSISTENT_FOLDER}/db.json" \
-  -responder="${RUN_OCSP_CERT}" -responder-key="${RUN_OCSP_KEY}"
+  -responder="${RUN_OCSP_CERT}" -responder-key="${RUN_OCSP_KEY}" \
+  -loglevel 0
+
 
 #
 # Exit/restart/crash

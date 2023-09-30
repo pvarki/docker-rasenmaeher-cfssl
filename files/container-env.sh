@@ -1,5 +1,5 @@
 #!/usr/bin/env -S /bin/bash
-set -ex
+set -e
 CFSSL_BIND_ADDRESS="${CFSSL_BIND_ADDRESS:-0.0.0.0}"
 CFSSL_BIND_PORT="${CFSSL_BIND_PORT:-8888}"
 
