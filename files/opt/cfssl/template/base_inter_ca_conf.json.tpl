@@ -1,19 +1,15 @@
 {
-  "CN": "Arskan Peli ja vimpain",
+  "CN": "{{getenv "CFSSL_CA_NAME" "RASENMAEHER"}}",
   "ca": {
-    "expiry": "42720h"
+    "expiry": "{{ getenv "CFSSL_CA_EXPIRY" "2016h" }}"
   },
   "key": {
     "algo": "rsa",
-    "size": 2048
+    "size": {{getenv "CFSSL_CA_KEYSIZE" "4096"}}
   },
   "names": [
     {
-      "C": "FI",
-      "L": "Jyvaskyle",
-      "O": "Peli ja vimpain",
-      "OU": "Arskan Peli ja vimpain",
-      "ST": "Finland"
+      "OU": "RASENMAEHER"
     }
   ]
 }

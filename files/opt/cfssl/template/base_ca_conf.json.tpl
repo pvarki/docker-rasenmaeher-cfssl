@@ -1,16 +1,12 @@
 {
-  "CN": "Virveli, Vimpain ja Mupellus",
+  "CN": "{{getenv "CFSSL_CA_NAME" "RASENMAEHER"}} BaseCA",
   "key": {
     "algo": "rsa",
-    "size": 2048
+    "size": {{getenv "CFSSL_CA_KEYSIZE" "4096"}}
   },
   "names": [
     {
-      "C": "Fi",
-      "L": "Pori",
-      "O": "Virveli, Vimpain ja Mupellus",
-      "OU": "Default CA",
-      "ST": "Finland"
+      "OU": "Base CA"
     }
   ]
 }

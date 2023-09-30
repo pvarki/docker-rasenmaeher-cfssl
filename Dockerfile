@@ -2,7 +2,6 @@ FROM cfssl/cfssl as base
 ENV DEBIAN_FRONTEND noninteractive
 
 COPY --from=hairyhenderson/gomplate:stable /gomplate /bin/gomplate
-COPY ./files/opt/cfssl /opt/cfssl
 
 
 RUN apt-get update \
@@ -17,6 +16,7 @@ SHELL ["/bin/bash", "-lc"]
 
 
 FROM base as production
+COPY ./files/opt/cfssl /opt/cfssl
 COPY ./files/docker-entrypoint.sh /docker-entrypoint.sh
 COPY ./files/cfssl-start.sh /cfssl-start.sh
 COPY ./files/container-env.sh /container-env.sh
