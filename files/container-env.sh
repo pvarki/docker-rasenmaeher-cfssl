@@ -16,13 +16,13 @@ RUN_INTER_CA_CONF="${RUN_INTER_CA_CONF:-/data/persistent/inter-ca_conf.json}"
 
 # Root CA CSR config either in file or json string
 # This configuration file contains "CSR" information.
-INIT_CA_JSON_FILE="${INIT_CA_JSON_FILE:-/opt/cfssl/template/base_ca_conf.json}"
+INIT_CA_JSON_FILE="${INIT_CA_JSON_FILE:-/opt/cfssl/template/base_ca_conf.json.tpl}"
 INIT_CA_JSON_STRING="${INIT_CA_JSON_STRING:-NA}"
 # This configuration file contains "Certificate signing" information
-INIT_CA_CONFIG_JSON_FILE="${INIT_CA_CONFIG_JSON_FILE:-/opt/cfssl/template/root_ca_cfssl.json}"
+INIT_CA_CONFIG_JSON_FILE="${INIT_CA_CONFIG_JSON_FILE:-/opt/cfssl/template/root_ca_cfssl.json.tpl}"
 
 # Intermediate CA CSR configuration in file or json string
-INIT_INTER_CA_JSON_FILE="${INIT_INTER_CA_JSON_FILE:-/opt/cfssl/template/base_inter_ca_conf.json}"
+INIT_INTER_CA_JSON_FILE="${INIT_INTER_CA_JSON_FILE:-/opt/cfssl/template/base_inter_ca_conf.json.tpl}"
 INIT_INTER_CA_JSON_STRING="${INIT_INTER_CA_JSON_STRING:-NA}"
 
 # Alternative goose init config files can be changed using these.

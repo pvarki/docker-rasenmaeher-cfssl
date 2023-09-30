@@ -25,11 +25,11 @@ then
         if [[ -f "$INIT_CA_JSON_FILE" ]]
         echo "$(date) --- Using file defined in INIT_CA_JSON_FILE as base config"
         then
-            if cat "$INIT_CA_JSON_FILE" | jq > /dev/null
+            if gomplate -f "$INIT_CA_JSON_FILE" | jq > /dev/null
             then
-                cp "$INIT_CA_JSON_FILE" "$RUN_CA_CONF"
+                gomplate -f "$INIT_CA_JSON_FILE" | jq > "$RUN_CA_CONF"
             else
-                cat "$INIT_CA_JSON_FILE" | jq
+                gomplate -f "$INIT_CA_JSON_FILE" | jq
                 echo "$(date) --- ERROR - INIT_CA_JSON_FILE doesnt contain valid JSON"
                 exit
             fi
@@ -54,21 +54,21 @@ then
 
     else
         echo "$(date) --- Using file defined in INIT_CA_JSON_FILE as base config"
-        if cat "$INIT_INTER_CA_JSON_FILE" | jq > /dev/null
+        if gomplate -f  "$INIT_INTER_CA_JSON_FILE" | jq > /dev/null
         then
-            cp "$INIT_INTER_CA_JSON_FILE" "$RUN_INTER_CA_CONF"
+            gomplate -f "$INIT_INTER_CA_JSON_FILE" | jq > "$RUN_INTER_CA_CONF"
         else
-            cat "$INIT_INTER_CA_JSON_FILE" | jq
+            gomplate -f "$INIT_INTER_CA_JSON_FILE" | jq
             echo "$(date) --- ERROR - INIT_INTER_CA_JSON_FILE doesnt contain valid JSON"
             exit
         fi
     fi
 
-    if cat "$INIT_CA_CONFIG_JSON_FILE" | jq > /dev/null
+    if gomplate -f "$INIT_CA_CONFIG_JSON_FILE" | jq > /dev/null
     then
-        cp "$INIT_CA_CONFIG_JSON_FILE" "$RUN_CA_CFSSL_CONF"
+        gomplate -f "$INIT_CA_CONFIG_JSON_FILE" | jq > "$RUN_CA_CFSSL_CONF"
     else
-        cat "$INIT_CA_CONFIG_JSON_FILE" | jq
+        gomplate -f "$INIT_CA_CONFIG_JSON_FILE" | jq
         echo "$(date) --- ERROR - INIT_CA_CONFIG_JSON_FILE doesnt contain valid JSON"
         exit
     fi
