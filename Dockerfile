@@ -18,9 +18,19 @@ SHELL ["/bin/bash", "-lc"]
 FROM base as production
 COPY ./files/opt/cfssl /opt/cfssl
 COPY ./files/docker-entrypoint.sh /docker-entrypoint.sh
-COPY ./files/cfssl-start.sh /cfssl-start.sh
 COPY ./files/container-env.sh /container-env.sh
+COPY ./files/cfssl-init.sh /cfssl-init.sh
+COPY ./files/cfssl-start.sh /cfssl-start.sh
+COPY ./files/ocsp-start.sh /ocsp-start.sh
 WORKDIR /opt/cfssl
+
+
+FROM production as api
+ENV CFSSL_MODE=api
+ENTRYPOINT ["/usr/bin/tini", "--", "/docker-entrypoint.sh"]
+
+FROM production as ocsp
+ENV CFSSL_MODE=ocsp
 ENTRYPOINT ["/usr/bin/tini", "--", "/docker-entrypoint.sh"]
 
 

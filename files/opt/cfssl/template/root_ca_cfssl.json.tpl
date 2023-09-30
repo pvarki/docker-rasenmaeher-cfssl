@@ -2,9 +2,15 @@
 {
   "signing": {
     "default": {
-      "expiry": "{{ print $default_expiry }}"
+      "expiry": "{{ print $default_expiry }}",
+      "ocsp_url": "https://{{ getenv "NGINX_HOST" "localmaeher.pvarki.fi" }}:{{ getenv "NGINX_HTTPS_PORT" "4439" }}/ca/ocsp",
+      "crl_url": "https://{{ getenv "NGINX_HOST" "localmaeher.pvarki.fi" }}:{{ getenv "NGINX_HTTPS_PORT" "4439" }}/ca/crl"
     },
     "profiles": {
+      "ocsp": {
+        "usages": ["digital signature", "ocsp signing"],
+        "expiry": "{{ getenv "CFSSL_SIGN_OCSP_EXPIRY" "2016h" }}"
+      },
       "client": {
         "expiry": "{{ getenv "CFSSL_SIGN_CLIENT_EXPIRY" $default_expiry }}",
         "usages": [
