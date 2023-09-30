@@ -8,7 +8,7 @@ jobs:
       runs-on: ubuntu-latest
       steps:
       - uses: actions/checkout@v3
-      - run: docker build -t rasenmaeher_cfssl .
+      - run: docker build --target api -t rasenmaeher_cfssl .
       - run: docker run -d -p 8888:8888 --name rasenmaeher_cfssl rasenmaeher_cfssl
       - run: sleep 60 && docker logs rasenmaeher_cfssl
       - run: echo 'print whole trace' && curl http://localhost:8888
