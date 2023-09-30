@@ -3,8 +3,8 @@
   "signing": {
     "default": {
       "expiry": "{{ print $default_expiry }}",
-      "ocsp_url": "https://{{ getenv "NGINX_HOST" "localmaeher.pvarki.fi" }}:{{ getenv "NGINX_HTTPS_PORT" "4439" }}/ca/ocsp",
-      "crl_url": "https://{{ getenv "NGINX_HOST" "localmaeher.pvarki.fi" }}:{{ getenv "NGINX_HTTPS_PORT" "4439" }}/ca/crl"
+      "ocsp_url": "https://{{ getenv "OCSP_HOST" "localmaeher.pvarki.fi" }}:{{ getenv "OCSP_PORT" "4439" }}/ca/ocsp",
+      "crl_url": "https://{{ getenv "OCSP_HOST" "localmaeher.pvarki.fi" }}:{{ getenv "OCSP_PORT" "4439" }}/ca/crl"
     },
     "profiles": {
       "ocsp": {
