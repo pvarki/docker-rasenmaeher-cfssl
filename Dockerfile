@@ -1,31 +1,45 @@
-FROM cfssl/cfssl
+FROM cfssl/cfssl as base
+ENV DEBIAN_FRONTEND noninteractive
+
+COPY --from=hairyhenderson/gomplate:stable /gomplate /bin/gomplate
 
 
+RUN apt-get update \
+    && apt-get install -y \
+      jq \
+      tini \
+    && go install bitbucket.org/liamstask/goose/cmd/goose@latest \
+    && mkdir -p /opt/cfssl/persistent/certdb/sqlite/migrations \
+    && true
+CMD []
+SHELL ["/bin/bash", "-lc"]
+
+
+FROM base as production
 COPY ./files/opt/cfssl /opt/cfssl
 COPY ./files/docker-entrypoint.sh /docker-entrypoint.sh
-
-
-ENV DEBIAN_FRONTEND noninteractive
-RUN apt-get update
-RUN apt-get install -y \
-    jq
-RUN mkdir -p /opt/cfssl/persistent
-
-
-# SETUP GOOSE ( SQLITE DB MIGRATION APP )
-# GOOSE / CERTDB base configuration files will be under /opt/cfssl/template/goose/
+COPY ./files/container-env.sh /container-env.sh
+COPY ./files/cfssl-init.sh /cfssl-init.sh
+COPY ./files/cfssl-start.sh /cfssl-start.sh
+COPY ./files/ocsp-start.sh /ocsp-start.sh
 WORKDIR /opt/cfssl
-RUN go install bitbucket.org/liamstask/goose/cmd/goose@latest
-RUN mkdir -p /opt/cfssl/persistent/certdb/sqlite/migrations
-
-#
-# THESE SHOULD BE STATIC FILES THAT ARE STORED UNDER template/goose
-# cd "/opt/cfssl/persistent/certdb/sqlite" ;  wget 'https://raw.githubusercontent.com/cloudflare/cfssl/master/certdb/sqlite/dbconf.yml'
-# cd "/opt/cfssl/persistent/certdb/sqlite/migrations" ; wget https://raw.githubusercontent.com/cloudflare/cfssl/master/certdb/sqlite/migrations/001_CreateCertificates.sql
-# cd "/opt/cfssl/persistent/certdb/sqlite/migrations" ; wget https://raw.githubusercontent.com/cloudflare/cfssl/master/certdb/sqlite/migrations/002_AddMetadataToCertificates.sql
 
 
+FROM production as api
+ENV CFSSL_MODE=api
+ENTRYPOINT ["/usr/bin/tini", "--", "/docker-entrypoint.sh"]
+
+FROM production as ocsp
+ENV CFSSL_MODE=ocsp
+ENTRYPOINT ["/usr/bin/tini", "--", "/docker-entrypoint.sh"]
 
 
-ENTRYPOINT ["/bin/bash"]
-CMD ["/docker-entrypoint.sh"]
+###########
+# Hacking #
+###########
+FROM production as devel_shell
+RUN apt-get update && apt-get install -y zsh jq \
+    && sh -c "$(curl -fsSL https://raw.githubusercontent.com/ohmyzsh/ohmyzsh/master/tools/install.sh)" \
+    && echo "source /root/.profile" >>/root/.zshrc \
+    && true
+ENTRYPOINT ["/bin/zsh", "-l"]

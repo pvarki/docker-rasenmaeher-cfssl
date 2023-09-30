@@ -1,11 +1,18 @@
+{{ $default_expiry := getenv "CFSSL_SIGN_DEFAULT_EXPIRY" "1008h" }}
 {
   "signing": {
     "default": {
-      "expiry": "8760h"
+      "expiry": "{{ print $default_expiry }}",
+      "ocsp_url": "https://{{ getenv "OCSP_HOST" "localmaeher.pvarki.fi" }}:{{ getenv "OCSP_PORT" "4439" }}/ca/ocsp",
+      "crl_url": "https://{{ getenv "OCSP_HOST" "localmaeher.pvarki.fi" }}:{{ getenv "OCSP_PORT" "4439" }}/ca/crl"
     },
     "profiles": {
+      "ocsp": {
+        "usages": ["digital signature", "ocsp signing"],
+        "expiry": "{{ getenv "CFSSL_SIGN_OCSP_EXPIRY" "2016h" }}"
+      },
       "client": {
-        "expiry": "8760h",
+        "expiry": "{{ getenv "CFSSL_SIGN_CLIENT_EXPIRY" $default_expiry }}",
         "usages": [
           "signing",
           "digital signature",
@@ -19,7 +26,7 @@
           "max_path_len": 0,
           "max_path_len_zero": true
         },
-        "expiry": "8760h",
+        "expiry": "{{ getenv "CFSSL_SIGN_CA_EXPIRY" "2016h" }}",
         "usages": [
           "signing",
           "digital signature",
@@ -31,7 +38,7 @@
         ]
       },
       "peer": {
-        "expiry": "8760h",
+        "expiry": "{{ getenv "CFSSL_SIGN_PEER_EXPIRY" $default_expiry }}",
         "usages": [
           "signing",
           "digital signature",
@@ -41,7 +48,7 @@
         ]
       },
       "server": {
-        "expiry": "8760h",
+        "expiry": "{{ getenv "CFSSL_SIGN_SERVER_EXPIRY" $default_expiry }}",
         "usages": [
           "signing",
           "digital signing",
