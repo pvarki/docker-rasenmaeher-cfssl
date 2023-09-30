@@ -14,7 +14,7 @@ cfssl serve -address=$CFSSL_BIND_ADDRESS -port $CFSSL_BIND_PORT \
   -ca "${RUN_INTER_CA}" -ca-key "${RUN_INTER_CA_KEY}" \
   -db-config "${CFSSL_PERSISTENT_FOLDER}/db.json" \
   -responder="${RUN_OCSP_CERT}" -responder-key="${RUN_OCSP_KEY}" \
-  -ca-bundle "${RUN_INTER_CA}"
+  -int-bundle "${RUN_INTER_CA}" -ca-bundle "${RUN_CA}" \
   -loglevel 0
 
 
