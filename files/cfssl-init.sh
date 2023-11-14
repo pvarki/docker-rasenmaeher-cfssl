@@ -167,7 +167,7 @@ fi
 if [[ -d "${INT_SHARED_CERT_FOLDER}" ]]
 then
     # Copy CA files to persistent path
-    #cp "${RUN_CA}" "${INT_SHARED_CERT_FOLDER}/"
-    #cp "${RUN_INTER_CA}" "${INT_SHARED_CERT_FOLDER}/"
-    cat "${RUN_CA}" "${RUN_INTER_CA}" >> "${INT_SHARED_CERT_FOLDER}/ca_chain.pem"
+    cat "${RUN_INTER_CA}" "${RUN_CA}" > "${INT_SHARED_CERT_FOLDER}/ca_chain.pem"
+    cat "${RUN_INTER_CA}" > "${INT_SHARED_CERT_FOLDER}/intermediate_ca.pem"
+    cat "${RUN_CA}" > "${INT_SHARED_CERT_FOLDER}/root_ca.pem"
 fi
