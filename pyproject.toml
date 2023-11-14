@@ -6,6 +6,10 @@ authors = ["Eero af Heurlin <eero.afheurlin@iki.fi>"]
 readme = "README.rst"
 packages = [{include = "ocsprest", from = "src"}]
 
+[tool.poetry.scripts]
+fakessl = "ocsprest.console.fakessl:fakessl_cli"
+ocsprest = "ocsprest.console.ocsprest:ocsprest_cli"
+
 
 [tool.black]
 line-length = 120
@@ -61,6 +65,9 @@ branch = true
 python = "^3.9"
 aiohttp = {version = "^3.8", extras = ["speedups"]}
 pydantic-settings = "^2.0"
+libadvian = "^1.4"
+click = "^8.0"
+
 
 [tool.poetry.group.dev.dependencies]
 pytest = "^7.4"
