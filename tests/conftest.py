@@ -20,5 +20,5 @@ def default_env(monkeysession: pytest.MonkeyPatch, nice_tmpdir_ses: str) -> Gene
     with monkeysession.context() as mpatch:
         mpatch.setenv("CI", "true")
         mpatch.setenv("OR_DATA_PATH", str(datadir))
-        mpatch.setenv("OR_CFSSL_PATH", "fakessl")
+        mpatch.setenv("OR_CFSSL", "fakessl")
         yield None

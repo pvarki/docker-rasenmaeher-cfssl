@@ -5,6 +5,7 @@ CFSSL_BIND_PORT="${CFSSL_BIND_PORT:-8888}"
 
 # CA Cert key and config filen path
 CFSSL_PERSISTENT_FOLDER="${CFSSL_PERSISTENT_FOLDER:-/data/persistent}"
+RUN_DB_CONFIG="${RUN_DB_CONFIG:-/data/persistent/db.json}"
 RUN_CA="${RUN_CA:-/data/persistent/ca.pem}"
 RUN_CA_KEY="${RUN_CA_KEY:-/data/persistent/ca_key.pem}"
 RUN_CA_CONF="${RUN_CA_CONF:-/data/persistent/ca_conf.json}"

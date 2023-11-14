@@ -3,9 +3,11 @@ import logging
 
 import click
 from libadvian.logging import init_logging
+from aiohttp import web
 
 from ocsprest import __version__
 from ocsprest.config import RESTConfig
+from ocsprest.routes import get_app
 
 LOGGER = logging.getLogger(__name__)
 
@@ -28,6 +30,14 @@ def cligrp(loglevel: int, verbose: int) -> None:
 def dump_config() -> None:
     """Show the resolved config as JSON"""
     click.echo(RESTConfig.singleton().model_dump_json())
+
+
+@cligrp.command(name="serve")
+def start_server() -> None:
+    """Start the REST API server"""
+    cnf = RESTConfig.singleton()
+    LOGGER.info("Starting runner on port {}".format(cnf.port))
+    web.run_app(get_app(), host=cnf.addr, port=cnf.port)
 
 
 def ocsprest_cli() -> None:
