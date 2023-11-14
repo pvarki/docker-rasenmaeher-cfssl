@@ -1,11 +1,12 @@
 """helpers"""
+from typing import Tuple
 import logging
 import asyncio
 
 LOGGER = logging.getLogger(__name__)
 
 
-async def call_cmd(cmd: str, timeout: int = 10) -> int:
+async def call_cmd(cmd: str, timeout: int = 10) -> Tuple[int, str, str]:
     """Do the boilerplate for calling cmd and reporting output/return code"""
     LOGGER.debug("Calling create_subprocess_shell(({})".format(cmd))
     process = await asyncio.create_subprocess_shell(
@@ -23,7 +24,7 @@ async def call_cmd(cmd: str, timeout: int = 10) -> int:
         LOGGER.error(err)
         LOGGER.error(out)
 
-    return process.returncode
+    return process.returncode, out.decode("utf-8"), err.decode("utf-8")
 
 
 def cfssl_loglevel() -> int:
