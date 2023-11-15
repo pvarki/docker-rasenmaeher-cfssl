@@ -3,14 +3,18 @@ from typing import Tuple
 import logging
 import asyncio
 
+from .config import RESTConfig
+
 LOGGER = logging.getLogger(__name__)
 
 
 async def call_cmd(cmd: str, timeout: int = 10) -> Tuple[int, str, str]:
     """Do the boilerplate for calling cmd and reporting output/return code"""
-    LOGGER.debug("Calling create_subprocess_shell(({})".format(cmd))
+    cnf = RESTConfig.singleton()
+    cwd_cmd = f"cd {cnf.data_path} && {cmd}"
+    LOGGER.debug("Calling create_subprocess_shell(({})".format(cwd_cmd))
     process = await asyncio.create_subprocess_shell(
-        cmd,
+        cwd_cmd,
         stdout=asyncio.subprocess.PIPE,
         stderr=asyncio.subprocess.PIPE,
     )

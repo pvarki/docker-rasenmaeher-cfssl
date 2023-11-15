@@ -21,6 +21,7 @@ async def refresh_all(request: web.Request) -> web.Response:
     args: List[str] = [
         str(cnf.cfssl),
         "ocsprefresh",
+        f"-db-config {cnf.dbconf}",
         f"-ca {cnf.cacrt}",
         f"-ca-key {cnf.cakey}",
         f"-responder {cnf.respcrt}",
@@ -44,6 +45,7 @@ async def sign_one(request: web.Request) -> web.Response:
     certtmp = Path(tempfile.gettempdir()) / f"{uuid.uuid4()}.pem"
     try:
         certtmp.write_text(data["cert"])
+        status = data.get("status", "good")
 
         cnf = RESTConfig.singleton()
         args: List[str] = [
@@ -51,6 +53,7 @@ async def sign_one(request: web.Request) -> web.Response:
             "ocspsign",
             f"-cert {certtmp}",
             f"-ca {cnf.cacrt}",
+            f"-status={status}",
             f"-responder {cnf.respcrt}",
             f"-responder-key {cnf.respkey}",
             f"-loglevel {cfssl_loglevel()}",
