@@ -9,7 +9,7 @@ import json
 from aiohttp import web
 
 from .config import RESTConfig
-from .helpers import call_cmd, cfssl_loglevel
+from .helpers import call_cmd, cfssl_loglevel, dump_crl
 
 LOGGER = logging.getLogger(__name__)
 
@@ -74,6 +74,18 @@ async def sign_one(request: web.Request) -> web.Response:
         certtmp.unlink()
 
 
+async def call_dump_crl(request: web.Request) -> web.Response:
+    """Dump CRL to shared directory, triggering reloads for everyone interested in it is beyond us though"""
+    _ = request
+    ret = await dump_crl()
+    if ret != 0:
+        return web.json_response(
+            {"success": False, "error": f"CFSSL CLI call to crl failed, code {ret}. See server logs"},
+            status=500,
+        )
+    return web.json_response({"success": True})
+
+
 def get_app() -> web.Application:
     """Get the app"""
     app = web.Application()
@@ -81,6 +93,7 @@ def get_app() -> web.Application:
         [
             web.post("/api/v1/refresh", refresh_all),
             web.post("/api/v1/sign", sign_one),
+            web.post("/api/v1/dump_crl", call_dump_crl),
         ]
     )
     LOGGER.debug("Returning {}".format(app))

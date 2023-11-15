@@ -67,6 +67,7 @@ aiohttp = {version = "^3.8", extras = ["speedups"]}
 pydantic-settings = "^2.0"
 libadvian = "^1.4"
 click = "^8.0"
+cryptography = "^41.0"
 
 
 [tool.poetry.group.dev.dependencies]

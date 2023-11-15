@@ -1,4 +1,5 @@
 """CLI commands for the OCSP rest wrapper"""
+import asyncio
 import logging
 
 import click
@@ -8,6 +9,7 @@ from aiohttp import web
 from ocsprest import __version__
 from ocsprest.config import RESTConfig
 from ocsprest.routes import get_app
+from ocsprest.helpers import dump_crl
 
 LOGGER = logging.getLogger(__name__)
 
@@ -32,12 +34,31 @@ def dump_config() -> None:
     click.echo(RESTConfig.singleton().model_dump_json())
 
 
+@cligrp.command(name="crl")
+def crl() -> None:
+    """Show the resolved config as JSON"""
+    asyncio.get_event_loop().run_until_complete(dump_crl())
+
+
 @cligrp.command(name="serve")
 def start_server() -> None:
     """Start the REST API server"""
     cnf = RESTConfig.singleton()
+    loop = asyncio.get_event_loop()
+
+    async def crl_refresher() -> None:
+        """Dump the CRL periodically"""
+        try:
+            while True:
+                await dump_crl()
+                await asyncio.sleep(cnf.crl_refresh)
+        except asyncio.CancelledError:
+            LOGGER.debug("Cancelled")
+
+    task = loop.create_task(crl_refresher())
     LOGGER.info("Starting runner on port {}".format(cnf.port))
-    web.run_app(get_app(), host=cnf.addr, port=cnf.port)
+    web.run_app(get_app(), host=cnf.addr, port=cnf.port, loop=loop)
+    task.cancel("run_app returned")
 
 
 def ocsprest_cli() -> None:

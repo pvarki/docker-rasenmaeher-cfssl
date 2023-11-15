@@ -31,6 +31,11 @@ class RESTConfig(BaseSettings):
     respkey: Path = Field(
         alias="RUN_OCSP_KEY", description="Responder key to use", default="/data/persistent/ocsp_key.pem"
     )
+    crl: Path = Field(
+        description="Location to dumpthe DER CRL to, .PEM version will also be created", default="/ca_public/crl.der"
+    )
+    crl_lifetime: str = Field(description="Lifetime to pass to CFSSL", default="1800s")
+    crl_refresh: int = Field(description="Interval to dump CRL via out background task", default=900)
 
     ci: bool = Field(default=False, alias="CI", description="Are we running in CI")
     model_config = SettingsConfigDict(env_prefix="or_", env_file=".env", extra="ignore", env_nested_delimiter="__")
