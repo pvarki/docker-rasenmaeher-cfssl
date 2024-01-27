@@ -22,6 +22,12 @@ class RESTConfig(BaseSettings):
     cakey: Path = Field(
         alias="RUN_INTER_CA_KEY", description="CA key to use in commands", default="/data/persistent/inter-ca_key.pem"
     )
+    rootcacrt: Path = Field(
+        alias="RUN_CA", description="Root CA cert to use in commands", default="/data/persistent/ca.pem"
+    )
+    rootcakey: Path = Field(
+        alias="RUN_CA_KEY", description="root CA key to use in commands", default="/data/persistent/init_ca-key.pem"
+    )
     dbconf: Path = Field(
         alias="RUN_DB_CONFIG", description="Path to the db config file", default="/data/persistent/db.json"
     )
@@ -32,7 +38,7 @@ class RESTConfig(BaseSettings):
         alias="RUN_OCSP_KEY", description="Responder key to use", default="/data/persistent/ocsp_key.pem"
     )
     crl: Path = Field(
-        description="Location to dumpthe DER CRL to, .PEM version will also be created", default="/ca_public/crl.der"
+        description="Location to dump the DER CRL to, .PEM version will also be created", default="/ca_public/crl.der"
     )
     crl_lifetime: str = Field(description="Lifetime to pass to CFSSL", default="1800s")
     crl_refresh: int = Field(description="Interval to dump CRL via out background task", default=900)
