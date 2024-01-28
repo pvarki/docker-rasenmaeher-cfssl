@@ -72,7 +72,9 @@ async def merge_crl() -> int:
             return ret
     der_path = cnf.crl
     pem_path = cnf.crl.parent / f"{cnf.crl.stem}.pem"
+    LOGGER.info("Writing {}".format(der_path))
     der_path.write_bytes(root_der.read_bytes() + intermediate_der.read_bytes())
+    LOGGER.info("Writing {}".format(pem_path))
     pem_path.write_bytes(root_pem.read_bytes() + intermediate_pem.read_bytes())
     return 0
 
