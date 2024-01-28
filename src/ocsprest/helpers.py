@@ -56,8 +56,8 @@ class CRLType(enum.IntEnum):
 def crlpaths(crltype: CRLType = CRLType.MERGED) -> Tuple[Path, Path]:
     """Path to CRL files by CRLType"""
     cnf = RESTConfig.singleton()
-    der_path = cnf.crl.parent / f"{cnf.crl.stem}_{crltype}.der"
-    pem_path = cnf.crl.parent / f"{cnf.crl.stem}_{crltype}.pem"
+    der_path = cnf.crl.parent / f"{cnf.crl.stem}_{crltype.name.lower()}.der"
+    pem_path = cnf.crl.parent / f"{cnf.crl.stem}_{crltype.name.lower()}.pem"
     return der_path, pem_path
 
 

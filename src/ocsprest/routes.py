@@ -85,6 +85,7 @@ async def call_dump_crl(request: web.Request) -> web.Response:
         )
     return web.json_response({"success": True})
 
+
 async def get_crl_pem(request: web.Request) -> web.Response:
     """Dump CRL to shared directory, triggering reloads for everyone interested in it is beyond us though"""
     _ = request
@@ -96,6 +97,7 @@ async def get_crl_pem(request: web.Request) -> web.Response:
         )
     _, pem_path = crlpaths()
     return web.Response(body=pem_path.read_bytes(), content_type="application/x-pem-file")
+
 
 async def get_crl_der(request: web.Request) -> web.Response:
     """Dump CRL to shared directory, triggering reloads for everyone interested in it is beyond us though"""
