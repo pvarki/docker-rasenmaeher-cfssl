@@ -14,6 +14,7 @@ from .config import RESTConfig
 LOGGER = logging.getLogger(__name__)
 
 
+# FIXME: switch to the libpvarki version
 async def call_cmd(cmd: str, timeout: int = 10) -> Tuple[int, str, str]:
     """Do the boilerplate for calling cmd and reporting output/return code"""
     cnf = RESTConfig.singleton()
