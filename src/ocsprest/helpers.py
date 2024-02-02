@@ -122,3 +122,22 @@ async def dump_crl(crltype: CRLType = CRLType.MERGED) -> int:
     LOGGER.info("Writing {}".format(pem_path))
     pem_path.write_bytes(crl.public_bytes(encoding=serialization.Encoding.PEM))
     return ret
+
+
+async def refresh_oscp() -> int:
+    """Call the OCSP refresh script"""
+    cnf = RESTConfig.singleton()
+    args: List[str] = [
+        str(cnf.cfssl),
+        "ocsprefresh",
+        f"-db-config {cnf.dbconf}",
+        f"-ca {cnf.cacrt}",
+        f"-ca-key {cnf.cakey}",
+        f"-responder {cnf.respcrt}",
+        f"-responder-key {cnf.respkey}",
+        f"-loglevel {cfssl_loglevel()}",
+    ]
+    cmd = " ".join(args)
+    LOGGER.info("Running ocsprefresh")
+    ret, _, _ = await call_cmd(cmd)
+    return ret

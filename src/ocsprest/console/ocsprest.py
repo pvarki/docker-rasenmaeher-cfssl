@@ -9,7 +9,7 @@ from aiohttp import web
 from ocsprest import __version__
 from ocsprest.config import RESTConfig
 from ocsprest.routes import get_app
-from ocsprest.helpers import dump_crl
+from ocsprest.helpers import dump_crl, refresh_oscp
 
 LOGGER = logging.getLogger(__name__)
 
@@ -46,16 +46,16 @@ def start_server() -> None:
     cnf = RESTConfig.singleton()
     loop = asyncio.get_event_loop()
 
-    async def crl_refresher() -> None:
-        """Dump the CRL periodically"""
+    async def refresher() -> None:
+        """Dump the CRL and refresh OCSP periodically"""
         try:
             while True:
-                await dump_crl()
+                await asyncio.gather(dump_crl(), refresh_oscp())
                 await asyncio.sleep(cnf.crl_refresh)
         except asyncio.CancelledError:
             LOGGER.debug("Cancelled")
 
-    task = loop.create_task(crl_refresher())
+    task = loop.create_task(refresher())
     LOGGER.info("Starting runner on port {}".format(cnf.port))
     web.run_app(get_app(), host=cnf.addr, port=cnf.port, loop=loop)
     task.cancel("run_app returned")
