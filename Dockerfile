@@ -91,7 +91,6 @@ RUN source /.venv/bin/activate \
 ##############################################
 FROM production as ocsprest
 COPY --from=python_production_build /tmp/wheelhouse /tmp/wheelhouse
-COPY ./files/ocsprest-entrypoint.sh /ocsprest-entrypoint.sh
 WORKDIR /app
 # Install system level deps for running the package (not devel versions for building wheels)
 # and install the wheels we built in the previous step. generate default config
@@ -105,6 +104,7 @@ RUN apt-get update && apt-get install -y \
     && rm -rf /tmp/wheelhouse/ \
     # Do whatever else you need to
     && true
+COPY ./files/ocsprest-entrypoint.sh /ocsprest-entrypoint.sh
 ENTRYPOINT ["/usr/bin/tini", "--", "/ocsprest-entrypoint.sh"]
 
 

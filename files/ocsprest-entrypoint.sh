@@ -4,7 +4,7 @@ set -e
 if [ "$#" -eq 0 ]; then
   PORT=$(ocsprest config | jq .port)
   ocsprest -v refresher &
-  gunicorn ocsprest.routes:app_factory --bind 0.0.0.0:$PORT -w 4 --worker-class aiohttp.GunicornWebWorker
+  gunicorn "ocsprest.routes:app_w_logging()" --bind 0.0.0.0:$PORT -w 4 --worker-class uvicorn.workers.UvicornWorker
 else
   # run the given command
   exec "$@"

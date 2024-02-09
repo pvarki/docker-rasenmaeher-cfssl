@@ -108,7 +108,7 @@ async def healthcheck(request: web.Request) -> web.Response:
     return web.json_response({"healthcheck": "success"})
 
 
-async def get_app() -> web.Application:
+def get_app() -> web.Application:
     """Get the app"""
     app = web.Application()
     app.add_routes(
@@ -125,10 +125,10 @@ async def get_app() -> web.Application:
     return app
 
 
-async def app_factory() -> web.Application:
+def app_w_logging() -> web.Application:
     """init logging and create app"""
     init_logging()
-    app = await get_app()
+    app = get_app()
     return app
 
 
