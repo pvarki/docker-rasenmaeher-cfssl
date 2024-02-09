@@ -1,5 +1,6 @@
 """aiohttp routes"""
 from typing import List
+import asyncio
 import logging
 import tempfile
 import uuid
@@ -99,6 +100,13 @@ async def get_crl_der(request: web.Request) -> web.Response:
     return web.Response(body=der_path.read_bytes(), content_type="application/pkix-crl")
 
 
+async def healthcheck(request: web.Request) -> web.Response:
+    """Health check"""
+    _ = request
+    # TODO: should be actually test something ?
+    return web.json_response({"healthcheck": "success"})
+
+
 def get_app() -> web.Application:
     """Get the app"""
     app = web.Application()
@@ -113,3 +121,22 @@ def get_app() -> web.Application:
     )
     LOGGER.debug("Returning {}".format(app))
     return app
+
+
+async def app_factory() -> web.Application:
+    """create app with task for refresher"""
+    app = get_app()
+    loop = asyncio.get_event_loop()
+    _task = loop.create_task(refresher())
+    # TODO: How to signal the refresher that we're done ??
+    return app
+
+
+async def refresher() -> None:
+    """Dump the CRL and refresh OCSP periodically"""
+    try:
+        while True:
+            await asyncio.gather(dump_crl(), refresh_oscp())
+            await asyncio.sleep(RESTConfig.singleton().crl_refresh)
+    except asyncio.CancelledError:
+        LOGGER.debug("Cancelled")

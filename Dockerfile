@@ -53,6 +53,7 @@ RUN apt-get update \
     && apt-get install -y \
       python3-pip \
       curl \
+      jq \
     # Installing `poetry` package manager:
     && curl -sSL https://install.python-poetry.org | python3 - \
     && echo 'export PATH="/root/.local/bin:$PATH"' >>/root/.profile \
@@ -96,6 +97,7 @@ WORKDIR /app
 # and install the wheels we built in the previous step. generate default config
 RUN apt-get update && apt-get install -y \
         python3-pip \
+        jq \
     && apt-get autoremove -y \
     && rm -rf /var/lib/apt/lists/* \
     && WHEELFILE=`echo /tmp/wheelhouse/ocsprest-*.whl` \
