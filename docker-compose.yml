@@ -76,7 +76,7 @@ services:
       - cfssl_data:/data/persistent
       - ca_public:/ca_public
     healthcheck:
-      test: 'true'  # FIXME
+      test: 'ocsprest healthcheck || exit 1'
       interval: 5s
       timeout: 5s
       retries: 3
