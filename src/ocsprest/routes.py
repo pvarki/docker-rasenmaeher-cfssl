@@ -7,6 +7,7 @@ import uuid
 from pathlib import Path
 import json
 
+from libadvian.logging import init_logging
 from aiohttp import web
 
 from .config import RESTConfig
@@ -125,11 +126,9 @@ async def get_app() -> web.Application:
 
 
 async def app_factory() -> web.Application:
-    """create app with task for refresher"""
+    """init logging and create app"""
+    init_logging()
     app = await get_app()
-    loop = asyncio.get_event_loop()
-    _task = loop.create_task(refresher())
-    # TODO: How to signal the refresher that we're done ??
     return app
 
 
