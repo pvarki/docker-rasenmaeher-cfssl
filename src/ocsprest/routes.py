@@ -107,11 +107,12 @@ async def healthcheck(request: web.Request) -> web.Response:
     return web.json_response({"healthcheck": "success"})
 
 
-def get_app() -> web.Application:
+async def get_app() -> web.Application:
     """Get the app"""
     app = web.Application()
     app.add_routes(
         [
+            web.post("/api/v1/healthcheck", healthcheck),
             web.post("/api/v1/refresh", refresh_all),
             web.post("/api/v1/sign", sign_one),
             web.post("/api/v1/dump_crl", call_dump_crl),
@@ -125,7 +126,7 @@ def get_app() -> web.Application:
 
 async def app_factory() -> web.Application:
     """create app with task for refresher"""
-    app = get_app()
+    app = await get_app()
     loop = asyncio.get_event_loop()
     _task = loop.create_task(refresher())
     # TODO: How to signal the refresher that we're done ??

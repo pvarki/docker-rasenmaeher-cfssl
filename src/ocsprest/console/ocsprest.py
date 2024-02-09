@@ -48,6 +48,12 @@ def ocsp() -> None:
     asyncio.get_event_loop().run_until_complete(refresh_oscp())
 
 
+@cligrp.command(name="refresher")
+def start_refresher() -> None:
+    """Start the refresher loop and run forever"""
+    asyncio.get_event_loop().run_until_complete(refresher())
+
+
 @cligrp.command(name="serve")
 def start_server() -> None:
     """Start the REST API server"""
