@@ -13,7 +13,7 @@ from fastapi.responses import FileResponse
 
 from ocsprest import __version__
 from .config import RESTConfig
-from .helpers import call_cmd, cfssl_loglevel, dump_crl, crlpaths, refresh_oscp
+from .helpers import call_cmd, cfssl_loglevel, dump_crl, refresh_oscp
 
 LOGGER = logging.getLogger(__name__)
 ROUTER = APIRouter()
@@ -147,7 +147,8 @@ async def get_crl_pem(request: Request) -> FileResponse:
             status_code=500,
             detail={"success": False, "error": f"CFSSL CLI call to dump_crl failed, code {ret}. See server logs"},
         )
-    _, pem_path = crlpaths()
+    cnf = RESTConfig.singleton()
+    pem_path = cnf.crl.parent / f"{cnf.crl.stem}.pem"
     return FileResponse(pem_path, media_type="application/x-pem-file")
 
 
@@ -161,7 +162,7 @@ async def get_crl_der(request: Request) -> FileResponse:
             status_code=500,
             detail={"success": False, "error": f"CFSSL CLI call to dump_crl failed, code {ret}. See server logs"},
         )
-    der_path, _ = crlpaths()
+    der_path = RESTConfig.singleton().crl
     return FileResponse(der_path, media_type="application/pkix-crl")
 
 
