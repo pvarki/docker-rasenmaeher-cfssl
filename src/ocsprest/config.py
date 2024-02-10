@@ -28,6 +28,11 @@ class RESTConfig(BaseSettings):
     rootcakey: Path = Field(
         alias="RUN_CA_KEY", description="root CA key to use in commands", default="/data/persistent/init_ca-key.pem"
     )
+    conf: Path = Field(
+        alias="RUN_CA_CFSSL_CONF",
+        description="Path to the db config file",
+        default="/data/persistent/root_ca_cfssl.json",
+    )
     dbconf: Path = Field(
         alias="RUN_DB_CONFIG", description="Path to the db config file", default="/data/persistent/db.json"
     )

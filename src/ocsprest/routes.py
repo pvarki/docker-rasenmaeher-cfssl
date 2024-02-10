@@ -35,8 +35,61 @@ async def refresh_all(request: Request) -> Dict[str, Any]:
     return {"success": True}
 
 
-@ROUTER.post("/sign")
-async def sign_one(request: Request) -> Dict[str, Any]:
+@ROUTER.post("/csr/sign")
+async def csr_sign(request: Request) -> Dict[str, Any]:
+    """Sign a CSR, we have to do it via CLI if we want CFSSL to add the Authority Information Access properties"""
+    cnf = RESTConfig().singleton()
+    data = await request.json()
+    csrtmp = Path(tempfile.gettempdir()) / f"{uuid.uuid4()}.csr"
+    certtmp = csrtmp.with_suffix(".crt")
+    try:
+        csrtmp.write_text(data["certificate_request"])
+        args_sign: List[str] = [
+            str(cnf.cfssl),
+            "sign",
+            f"-config {cnf.conf}",
+            f"-db-config {cnf.dbconf}",
+            f"-ca {cnf.cacrt}",
+            f"-ca-key {cnf.cakey}",
+            f"-profile {data['profile']}",
+            f"-csr {csrtmp}",
+            f"-loglevel {cfssl_loglevel()}",
+        ]
+        cmd_sign = " ".join(args_sign)
+        ret_sign, out_sign, _ = await call_cmd(cmd_sign)
+        if ret_sign != 0:
+            raise HTTPException(
+                status_code=500,
+                detail={"success": False, "error": f"CFSSL CLI call to sign failed, code {ret_sign}. See server logs"},
+            )
+        resp_sign = json.loads(out_sign)
+        if not data.get("bundle", True):
+            return {"result": {"certificate": resp_sign["cert"].replace("\n", "\\n")}}
+        # Create the bundle
+        certtmp.write_text(resp_sign["cert"])
+        args_bundle: List[str] = [
+            str(cnf.cfssl),
+            "bundle",
+            f"-ca-bundle {cnf.rootcacrt}",
+            f"-int-bundle {cnf.cacrt}",
+            "-flavor optimal",
+            f"-cert {certtmp}",
+            f"-loglevel {cfssl_loglevel()}",
+        ]
+        cmd_bundle = " ".join(args_bundle)
+        ret_bundle, out_bundle, _ = await call_cmd(cmd_bundle)
+        if ret_bundle != 0:
+            LOGGER.error("CFSSL CLI call to bundle failed, returning the signed cert anyway")
+            return {"result": {"certificate": resp_sign["cert"].replace("\n", "\\n")}}
+        resp_bundle = json.loads(out_bundle)
+        return {"result": {"certificate": resp_bundle["bundle"].replace("\n", "\\n")}}
+    finally:
+        csrtmp.unlink()
+        certtmp.unlink()
+
+
+@ROUTER.post("/ocsp/sign")
+async def ocsp_sign_one(request: Request) -> Dict[str, Any]:
     """calls cfssl ocspsign"""
     data = await request.json()
     certtmp = Path(tempfile.gettempdir()) / f"{uuid.uuid4()}.pem"
