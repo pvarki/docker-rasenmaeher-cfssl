@@ -77,10 +77,10 @@ services:
       - ca_public:/ca_public
     healthcheck:
       test: 'ocsprest healthcheck || exit 1'
-      interval: 5s
-      timeout: 5s
+      interval: 10s
+      timeout: 10s
       retries: 3
-      start_period: 5s
+      start_period: 15s
     depends_on:
       cfssl:
         condition: service_healthy
