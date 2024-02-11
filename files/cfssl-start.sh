@@ -16,7 +16,9 @@ cfssl serve -address=$CFSSL_BIND_ADDRESS -port $CFSSL_BIND_PORT \
   -responder="${RUN_OCSP_CERT}" -responder-key="${RUN_OCSP_KEY}" \
   -int-bundle "${RUN_INTER_CA}" -ca-bundle "${RUN_CA}" \
   -loglevel 0
-
+# If we give this config to serve we get [WARNING] failed to sign request: {"code":5100,"message":"Invalid policy: no key usage available"}
+# But when we use it at CLI it works fine. WTF....
+#   -config "${RUN_CA_CFSSL_CONF}" \
 
 #
 # Exit/restart/crash
