@@ -65,7 +65,7 @@ branch = true
 python = "^3.9"
 aiohttp = {version = "^3.8", extras = ["speedups"]}
 pydantic-settings = "^2.0"
-libadvian = "^1.4"
+libadvian = "^1.6"
 click = "^8.0"
 cryptography = "^41.0"
 gunicorn = "^21.0"

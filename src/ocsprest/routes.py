@@ -7,6 +7,7 @@ import uuid
 from pathlib import Path
 import json
 
+from libadvian.tasks import TaskMaster
 from libadvian.logging import init_logging
 from fastapi import FastAPI, APIRouter, Request, HTTPException
 from fastapi.responses import FileResponse
@@ -26,12 +27,8 @@ ROUTER = APIRouter()
 async def refresh_all(request: Request) -> Dict[str, Any]:
     """calls cfssl ocsprefresh"""
     _ = request
-    ret = await refresh_oscp()
-    if ret != 0:
-        raise HTTPException(
-            status_code=500,
-            detail={"success": False, "error": f"CFSSL CLI call to ocsprefresh failed, code {ret}. See server logs"},
-        )
+    # Don't bother waiting for the result
+    TaskMaster.singleton().create_task(refresh_oscp())
     return {"success": True}
 
 
@@ -128,12 +125,8 @@ async def ocsp_sign_one(request: Request) -> Dict[str, Any]:
 async def call_dump_crl(request: Request) -> Dict[str, Any]:
     """Dump CRL to shared directory, triggering reloads for everyone interested in it is beyond us though"""
     _ = request
-    ret = await dump_crl()
-    if ret != 0:
-        raise HTTPException(
-            status_code=500,
-            detail={"success": False, "error": f"CFSSL CLI call to crl failed, code {ret}. See server logs"},
-        )
+    # Don't bother waiting for the result
+    TaskMaster.singleton().create_task(dump_crl())
     return {"success": True}
 
 
