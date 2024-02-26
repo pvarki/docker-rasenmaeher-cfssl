@@ -4,9 +4,11 @@ import logging
 from pathlib import Path
 
 import pytest
+from fastapi.testclient import TestClient
 from libadvian.logging import init_logging
 from libadvian.testhelpers import nice_tmpdir_ses, monkeysession  # pylint: disable=W0611
 
+from ocsprest.routes import get_app
 
 init_logging(logging.DEBUG)
 LOGGER = logging.getLogger(__name__)
@@ -22,3 +24,10 @@ def default_env(monkeysession: pytest.MonkeyPatch, nice_tmpdir_ses: str) -> Gene
         mpatch.setenv("OR_DATA_PATH", str(datadir))
         mpatch.setenv("OR_CFSSL", "fakessl")
         yield None
+
+
+@pytest.fixture()
+def client() -> Generator[TestClient, None, None]:
+    """Client with app instance"""
+    client = TestClient(get_app())
+    yield client
