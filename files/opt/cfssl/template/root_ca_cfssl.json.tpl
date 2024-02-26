@@ -4,7 +4,7 @@
     "default": {
       "expiry": "{{ print $default_expiry }}",
       "ocsp_url": "https://{{ getenv "OCSP_HOST" "localmaeher.pvarki.fi" }}:{{ getenv "OCSP_PORT" "4439" }}/ca/ocsp",
-      "crl_url": "https://{{ getenv "OCSP_HOST" "localmaeher.pvarki.fi" }}:{{ getenv "OCSP_PORT" "4439" }}/ca/crl"
+      "crl_url": "https://{{ getenv "OCSP_HOST" "localmaeher.pvarki.fi" }}:{{ getenv "OCSP_PORT" "4439" }}/ca/crl/crl.pem"
     },
     "profiles": {
       "ocsp": {
