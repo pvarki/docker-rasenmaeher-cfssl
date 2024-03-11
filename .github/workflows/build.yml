@@ -45,3 +45,13 @@ jobs:
             report_paths: '**/pytest*.xml'
             detailed_summary: true
             check_name: 'JUnit report (local)'
+
+    restwrapper_docker:
+      runs-on: ubuntu-latest
+      steps:
+      - uses: actions/checkout@v3
+      - run: docker build --target ocsprest -t rasenmaeher_ocsprest .
+      - run: docker run -d -p 8887:8887 --name rasenmaeher_ocsprest rasenmaeher_ocsprest
+      - run: sleep 3 && docker logs rasenmaeher_ocsprest
+      - run: echo 'print whole trace' && curl http://localhost:8887/api/v1/healthcheck
+      - run: echo 'verify success' && curl http://localhost:8887/api/v1/healthcheck | grep 'success'
