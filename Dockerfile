@@ -101,7 +101,7 @@ RUN apt-get update && apt-get install -y \
     && apt-get autoremove -y \
     && rm -rf /var/lib/apt/lists/* \
     && WHEELFILE=`echo /tmp/wheelhouse/ocsprest-*.whl` \
-    && pip3 install --find-links=/tmp/wheelhouse/ "$WHEELFILE"[all] \
+    && pip3 install --break-system-packages --find-links=/tmp/wheelhouse/ "$WHEELFILE"[all] \
     && rm -rf /tmp/wheelhouse/ \
     # Do whatever else you need to
     && true
