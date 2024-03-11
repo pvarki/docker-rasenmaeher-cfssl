@@ -54,6 +54,8 @@ RUN apt-get update \
       python3-pip \
       curl \
       jq \
+      python3-virtualenv \
+      python3-wheel \
     # Installing `poetry` package manager:
     && curl -sSL https://install.python-poetry.org | python3 - \
     && echo 'export PATH="/root/.local/bin:$PATH"' >>/root/.profile \
@@ -64,8 +66,7 @@ RUN apt-get update \
 WORKDIR /pysetup
 COPY ./poetry.lock ./pyproject.toml /pysetup/
 # Install basic requirements (utilizing an internal docker wheelhouse if available)
-RUN pip3 install wheel virtualenv \
-    && poetry export -f requirements.txt --without-hashes -o /tmp/requirements.txt \
+RUN poetry export -f requirements.txt --without-hashes -o /tmp/requirements.txt \
     && pip3 wheel --wheel-dir=/tmp/wheelhouse  -r /tmp/requirements.txt \
     && virtualenv /.venv && source /.venv/bin/activate && echo 'source /.venv/bin/activate' >>/root/.profile \
     && pip3 install --no-deps --find-links=/tmp/wheelhouse/ /tmp/wheelhouse/*.whl \
