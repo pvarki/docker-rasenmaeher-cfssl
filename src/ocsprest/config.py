@@ -46,6 +46,8 @@ class RESTConfig(BaseSettings):
         description="Location to dump the DER CRL to, .PEM version will also be created", default="/ca_public/crl.der"
     )
     crl_lifetime: str = Field(description="Lifetime to pass to CFSSL", default="1800s")
+    # OCSP responder rounds the response nextupdate in funky ways so less than 1h will lead to weird results
+    ocsp_lifetime: str = Field(description="Lifetime to pass to CFSSL", default="1h")
     crl_refresh: int = Field(description="Interval to dump CRL via out background task", default=900)
 
     ci: bool = Field(default=False, alias="CI", description="Are we running in CI")
