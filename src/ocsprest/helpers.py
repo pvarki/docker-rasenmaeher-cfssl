@@ -135,6 +135,7 @@ async def refresh_oscp() -> int:
         f"-ca-key {cnf.cakey}",
         f"-responder {cnf.respcrt}",
         f"-responder-key {cnf.respkey}",
+        f"-interval {cnf.crl_lifetime}",
         f"-loglevel {cfssl_loglevel()}",
     ]
     cmd = " ".join(args)
