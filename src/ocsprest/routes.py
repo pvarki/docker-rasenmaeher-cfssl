@@ -186,7 +186,10 @@ async def refresher() -> None:
     """Dump the CRL and refresh OCSP periodically"""
     try:
         while True:
-            await asyncio.gather(dump_crl(), refresh_oscp())
+            try:
+                await asyncio.gather(dump_crl(), refresh_oscp())
+            except asyncio.TimeoutError as exc:
+                LOGGER.warning("Ignoring timeout: {}".format(exc))
             await asyncio.sleep(RESTConfig.singleton().crl_refresh)
     except asyncio.CancelledError:
         LOGGER.debug("Cancelled")
