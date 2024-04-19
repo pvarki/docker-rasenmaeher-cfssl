@@ -50,8 +50,9 @@ jobs:
       runs-on: ubuntu-latest
       steps:
       - uses: actions/checkout@v4
+      - run: mkdir -p /tmp/ca_public && touch /tmp/ca_public/crl.der
       - run: docker build --target ocsprest -t rasenmaeher_ocsprest .
-      - run: docker run -d -p 8887:8887 --name rasenmaeher_ocsprest rasenmaeher_ocsprest
+      - run: docker run -d -p 8887:8887 -v /tmp/ca_public:/ca_public --name rasenmaeher_ocsprest rasenmaeher_ocsprest
       - run: sleep 3 && docker logs rasenmaeher_ocsprest
       - run: echo 'print whole trace' && curl http://localhost:8887/api/v1/healthcheck
       - run: echo 'verify success' && curl http://localhost:8887/api/v1/healthcheck | grep 'success'

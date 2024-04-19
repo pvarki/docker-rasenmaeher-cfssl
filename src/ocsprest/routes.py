@@ -6,6 +6,7 @@ import tempfile
 import uuid
 from pathlib import Path
 import json
+import time
 
 from libadvian.tasks import TaskMaster
 from libadvian.logging import init_logging
@@ -163,8 +164,15 @@ async def get_crl_der(request: Request) -> FileResponse:
 async def healthcheck(request: Request) -> Dict[str, Any]:
     """Health check"""
     _ = request
-    # TODO: should be actually test something ?
-    return {"healthcheck": "success"}
+    retval = "success"
+    grace = 15
+    cnf = RESTConfig.singleton()
+    modtime = time.time() - cnf.crl.stat().st_mtime
+    LOGGER.debug("{} modified {} seconds ago".format(cnf.crl, modtime))
+    if modtime > (cnf.crl_refresh + grace):
+        LOGGER.warning("{} modified too long ago ({}s)".format(cnf.crl, modtime))
+        retval = "crlfail"
+    return {"healthcheck": retval}
 
 
 def get_app() -> FastAPI:
@@ -186,7 +194,10 @@ async def refresher() -> None:
     """Dump the CRL and refresh OCSP periodically"""
     try:
         while True:
-            await asyncio.gather(dump_crl(), refresh_oscp())
+            try:
+                await asyncio.gather(dump_crl(), refresh_oscp())
+            except asyncio.TimeoutError as exc:
+                LOGGER.warning("Ignoring timeout: {}".format(exc))
             await asyncio.sleep(RESTConfig.singleton().crl_refresh)
     except asyncio.CancelledError:
         LOGGER.debug("Cancelled")
