@@ -1,8 +1,8 @@
 version: '3.4'
 
 x-domains_env:
-  SERVER_DOMAIN: &serverdomain ${SERVER_DOMAIN:-localmaeher.pvarki.fi}
-  MTLS_DOMAIN: &mtlsdomein "mtls.${SERVER_DOMAIN:-localmaeher.pvarki.fi}"
+  SERVER_DOMAIN: &serverdomain ${SERVER_DOMAIN:-localmaeher.dev.pvarki.fi}
+  MTLS_DOMAIN: &mtlsdomein "mtls.${SERVER_DOMAIN:-localmaeher.dev.pvarki.fi}"
   API_HTTPS_PORT: &apiport ${NGINX_HTTPS_PORT:-4439}
 
 x-cfssl_env: &cfssl_env
