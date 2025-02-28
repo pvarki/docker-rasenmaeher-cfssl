@@ -1,4 +1,4 @@
-FROM cfssl/cfssl as base
+FROM cfssl/cfssl AS base
 ENV DEBIAN_FRONTEND noninteractive
 
 COPY --from=hairyhenderson/gomplate:stable /gomplate /bin/gomplate
@@ -8,6 +8,7 @@ RUN apt-get update \
     && apt-get install -y \
       jq \
       tini \
+#    && go install github.com/pressly/goose/v3/cmd/goose@v3.17.0 \  # using this needs a lot of changes to the migrations
     && go install bitbucket.org/liamstask/goose/cmd/goose@latest \
     && mkdir -p /opt/cfssl/persistent/certdb/sqlite/migrations \
     && true
@@ -15,7 +16,7 @@ CMD []
 SHELL ["/bin/bash", "-lc"]
 
 
-FROM base as production
+FROM base AS production
 COPY ./files/opt/cfssl /opt/cfssl
 COPY ./files/docker-entrypoint.sh /docker-entrypoint.sh
 COPY ./files/container-env.sh /container-env.sh
@@ -25,16 +26,16 @@ COPY ./files/ocsp-start.sh /ocsp-start.sh
 WORKDIR /opt/cfssl
 
 
-FROM production as api
+FROM production AS api
 ENV CFSSL_MODE=api
 ENTRYPOINT ["/usr/bin/tini", "--", "/docker-entrypoint.sh"]
 
-FROM production as ocsp
+FROM production AS ocsp
 ENV CFSSL_MODE=ocsp
 ENTRYPOINT ["/usr/bin/tini", "--", "/docker-entrypoint.sh"]
 
 
-FROM production as python_base
+FROM production AS python_base
 ENV \
   # locale
   LC_ALL=C.UTF-8 \
@@ -75,7 +76,7 @@ RUN poetry export -f requirements.txt --without-hashes -o /tmp/requirements.txt 
 #####################################
 # Base stage for python prod builds #
 #####################################
-FROM python_base as python_production_build
+FROM python_base AS python_production_build
 # Only files needed by production setup
 COPY ./poetry.lock ./pyproject.toml ./README.rst ./src /app/
 WORKDIR /app
@@ -90,7 +91,7 @@ RUN source /.venv/bin/activate \
 ##############################################
 # Main production build for the python thing #
 ##############################################
-FROM production as ocsprest
+FROM production AS ocsprest
 COPY --from=python_production_build /tmp/wheelhouse /tmp/wheelhouse
 WORKDIR /app
 # Install system level deps for running the package (not devel versions for building wheels)
@@ -112,7 +113,7 @@ ENTRYPOINT ["/usr/bin/tini", "--", "/ocsprest-entrypoint.sh"]
 ###########
 # Hacking #
 ###########
-FROM python_dev as devel_shell
+FROM python_dev AS devel_shell
 RUN apt-get update && apt-get install -y zsh jq \
     && sh -c "$(curl -fsSL https://raw.githubusercontent.com/ohmyzsh/ohmyzsh/master/tools/install.sh)" \
     && echo "source /root/.profile" >>/root/.zshrc \
