@@ -8,7 +8,8 @@ RUN apt-get update \
     && apt-get install -y \
       jq \
       tini \
-#    && go install github.com/pressly/goose/v3/cmd/goose@v3.17.0 \  # using this needs a lot of changes to the migrations
+#    && go install github.com/pressly/goose/v3/cmd/goose@v3.17.0 \  # using this needs a lot of changes to the migrations \
+    && go get github.com/go-sql-driver/mysql@v1.8.1 \
     && go install bitbucket.org/liamstask/goose/cmd/goose@latest \
     && mkdir -p /opt/cfssl/persistent/certdb/sqlite/migrations \
     && true
