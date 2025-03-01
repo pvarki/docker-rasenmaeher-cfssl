@@ -1,16 +1,23 @@
-FROM cfssl/cfssl AS base
-ENV DEBIAN_FRONTEND noninteractive
+FROM cfssl/cfssl AS cfssl
+ENV DEBIAN_FRONTEND=noninteractive
 
 COPY --from=hairyhenderson/gomplate:stable /gomplate /bin/gomplate
-
-
+COPY ./files/docker-entrypoint.sh /docker-entrypoint.sh
+COPY ./files/container-env.sh /container-env.sh
 RUN apt-get update \
     && apt-get install -y \
-      jq \
       tini \
-#    && go install github.com/pressly/goose/v3/cmd/goose@v3.17.0 \  # using this needs a lot of changes to the migrations \
-    && go get github.com/go-sql-driver/mysql@v1.8.1 \
-    && go install bitbucket.org/liamstask/goose/cmd/goose@latest \
+    && true
+ENTRYPOINT ["/usr/bin/tini", "--", "/docker-entrypoint.sh"]
+
+FROM cfssl AS base
+RUN echo "deb http://deb.debian.org/debian bookworm-backports main" >/etc/apt/sources.list.d/backports.list \
+    && apt-get update && apt-get install -y \
+      jq \
+      curl \
+#    && /usr/bin/go install github.com/pressly/goose/v3/cmd/goose@v3.17.0 \  # using this needs a lot of changes to the migrations \
+    && apt-get install -y -t bookworm-backports golang \
+    && /usr/bin/go install bitbucket.org/liamstask/goose/cmd/goose@latest \
     && mkdir -p /opt/cfssl/persistent/certdb/sqlite/migrations \
     && true
 CMD []
