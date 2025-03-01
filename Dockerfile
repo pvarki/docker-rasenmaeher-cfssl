@@ -4,9 +4,10 @@ ENV DEBIAN_FRONTEND=noninteractive
 COPY --from=hairyhenderson/gomplate:stable /gomplate /bin/gomplate
 COPY ./files/docker-entrypoint.sh /docker-entrypoint.sh
 COPY ./files/container-env.sh /container-env.sh
-RUN apt-get update \
-    && apt-get install -y \
+RUN apt-get update && apt-get install -y \
       tini \
+    && apt-get autoremove -y \
+    && rm -rf /var/lib/apt/lists/* \
     && true
 ENTRYPOINT ["/usr/bin/tini", "--", "/docker-entrypoint.sh"]
 
@@ -17,6 +18,8 @@ RUN echo "deb http://deb.debian.org/debian bookworm-backports main" >/etc/apt/so
       curl \
 #    && /usr/bin/go install github.com/pressly/goose/v3/cmd/goose@v3.17.0 \  # using this needs a lot of changes to the migrations \
     && apt-get install -y -t bookworm-backports golang \
+    && apt-get autoremove -y \
+    && rm -rf /var/lib/apt/lists/* \
     && /usr/bin/go install bitbucket.org/liamstask/goose/cmd/goose@latest \
     && mkdir -p /opt/cfssl/persistent/certdb/sqlite/migrations \
     && true
@@ -65,6 +68,8 @@ RUN apt-get update \
       jq \
       python3-virtualenv \
       python3-wheel \
+    && apt-get autoremove -y \
+    && rm -rf /var/lib/apt/lists/* \
     # Installing `poetry` package manager:
     && curl -sSL https://install.python-poetry.org | python3 - \
     && echo 'export PATH="/root/.local/bin:$PATH"' >>/root/.profile \
