@@ -68,6 +68,7 @@ ENV \
   PIP_DEFAULT_TIMEOUT=100 \
   # poetry:
   POETRY_VERSION=1.7.0
+SHELL ["/bin/bash", "-lc"]
 
 RUN apt-get update \
     && apt-get install -y \
@@ -86,11 +87,12 @@ RUN apt-get update \
 
 # Copy only requirements, to cache them in docker layer:
 WORKDIR /pysetup
-COPY ./poetry.lock ./pyproject.toml /pysetup/
+COPY ./poetry.lock ./pyproject.toml ./README.rst /pysetup/
 # Install basic requirements (utilizing an internal docker wheelhouse if available)
-RUN poetry export -f requirements.txt --without-hashes -o /tmp/requirements.txt \
+RUN pip3 install --break-system-packages wheel virtualenv poetry-plugin-export \
+    && poetry export -f requirements.txt --without-hashes -o /tmp/requirements.txt \
     && pip3 wheel --wheel-dir=/tmp/wheelhouse  -r /tmp/requirements.txt \
-    && virtualenv /.venv && source /.venv/bin/activate && echo 'source /.venv/bin/activate' >>/root/.profile \
+    && virtualenv /.venv && . /.venv/bin/activate && echo '. /.venv/bin/activate' >>/root/.profile \
     && pip3 install --no-deps --find-links=/tmp/wheelhouse/ /tmp/wheelhouse/*.whl \
     && true
 
