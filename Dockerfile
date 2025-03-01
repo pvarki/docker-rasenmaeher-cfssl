@@ -1,40 +1,65 @@
-FROM cfssl/cfssl as base
-ENV DEBIAN_FRONTEND noninteractive
+FROM cfssl/cfssl AS cfssl
+ENV DEBIAN_FRONTEND=noninteractive
 
-COPY --from=hairyhenderson/gomplate:stable /gomplate /bin/gomplate
-
-
-RUN apt-get update \
-    && apt-get install -y \
-      jq \
+COPY ./files/docker-entrypoint.sh /docker-entrypoint.sh
+COPY ./files/container-env.sh /container-env.sh
+RUN apt-get update && apt-get install -y \
       tini \
-    && go install bitbucket.org/liamstask/goose/cmd/goose@latest \
+    && apt-get autoremove -y \
+    && rm -rf /var/lib/apt/lists/* \
+    && true
+ENTRYPOINT ["/usr/bin/tini", "--", "/docker-entrypoint.sh"]
+
+FROM cfssl AS base
+RUN echo "deb http://deb.debian.org/debian bookworm-backports main" >/etc/apt/sources.list.d/backports.list \
+    && apt-get update && apt-get install -y \
+      jq \
+      curl \
+#    && /usr/bin/go install github.com/pressly/goose/v3/cmd/goose@v3.17.0 \  # using this needs a lot of changes to the migrations \
+    && apt-get install -y -t bookworm-backports golang \
+    && apt-get autoremove -y \
+    && rm -rf /var/lib/apt/lists/* \
+    && /usr/bin/go install bitbucket.org/liamstask/goose/cmd/goose@latest \
     && mkdir -p /opt/cfssl/persistent/certdb/sqlite/migrations \
     && true
 CMD []
 SHELL ["/bin/bash", "-lc"]
 
 
-FROM base as production
+FROM debian:bookworm-slim AS production
+COPY --from=hairyhenderson/gomplate:stable /gomplate /bin/gomplate
 COPY ./files/opt/cfssl /opt/cfssl
 COPY ./files/docker-entrypoint.sh /docker-entrypoint.sh
 COPY ./files/container-env.sh /container-env.sh
 COPY ./files/cfssl-init.sh /cfssl-init.sh
 COPY ./files/cfssl-start.sh /cfssl-start.sh
 COPY ./files/ocsp-start.sh /ocsp-start.sh
+COPY --from=base /go/bin/goose /usr/bin/goose
+COPY --from=base /usr/bin/cfssl /usr/bin/cfssl
+COPY --from=base /usr/bin/cfssl-bundle /usr/bin/cfssl-bundle
+COPY --from=base /usr/bin/cfssl-certinfo /usr/bin/cfssl-certinfo
+COPY --from=base /usr/bin/cfssl-newkey /usr/bin/cfssl-newkey
+COPY --from=base /usr/bin/cfssl-scan /usr/bin/cfssl-scan
+COPY --from=base /usr/bin/cfssljson /usr/bin/cfssljson
 WORKDIR /opt/cfssl
+RUN apt-get update && apt-get install -y \
+      jq \
+      tini \
+    && apt-get autoremove -y \
+    && rm -rf /var/lib/apt/lists/* \
+    && true
 
 
-FROM production as api
+FROM production AS api
 ENV CFSSL_MODE=api
 ENTRYPOINT ["/usr/bin/tini", "--", "/docker-entrypoint.sh"]
 
-FROM production as ocsp
+FROM production AS ocsp
 ENV CFSSL_MODE=ocsp
 ENTRYPOINT ["/usr/bin/tini", "--", "/docker-entrypoint.sh"]
 
 
-FROM production as python_base
+FROM production AS python_base
 ENV \
   # locale
   LC_ALL=C.UTF-8 \
@@ -48,6 +73,7 @@ ENV \
   PIP_DEFAULT_TIMEOUT=100 \
   # poetry:
   POETRY_VERSION=1.7.0
+SHELL ["/bin/bash", "-lc"]
 
 RUN apt-get update \
     && apt-get install -y \
@@ -56,6 +82,8 @@ RUN apt-get update \
       jq \
       python3-virtualenv \
       python3-wheel \
+    && apt-get autoremove -y \
+    && rm -rf /var/lib/apt/lists/* \
     # Installing `poetry` package manager:
     && curl -sSL https://install.python-poetry.org | python3 - \
     && echo 'export PATH="/root/.local/bin:$PATH"' >>/root/.profile \
@@ -64,18 +92,19 @@ RUN apt-get update \
 
 # Copy only requirements, to cache them in docker layer:
 WORKDIR /pysetup
-COPY ./poetry.lock ./pyproject.toml /pysetup/
+COPY ./poetry.lock ./pyproject.toml ./README.rst /pysetup/
 # Install basic requirements (utilizing an internal docker wheelhouse if available)
-RUN poetry export -f requirements.txt --without-hashes -o /tmp/requirements.txt \
+RUN pip3 install --break-system-packages wheel virtualenv poetry-plugin-export \
+    && poetry export -f requirements.txt --without-hashes -o /tmp/requirements.txt \
     && pip3 wheel --wheel-dir=/tmp/wheelhouse  -r /tmp/requirements.txt \
-    && virtualenv /.venv && source /.venv/bin/activate && echo 'source /.venv/bin/activate' >>/root/.profile \
+    && virtualenv /.venv && . /.venv/bin/activate && echo '. /.venv/bin/activate' >>/root/.profile \
     && pip3 install --no-deps --find-links=/tmp/wheelhouse/ /tmp/wheelhouse/*.whl \
     && true
 
 #####################################
 # Base stage for python prod builds #
 #####################################
-FROM python_base as python_production_build
+FROM python_base AS python_production_build
 # Only files needed by production setup
 COPY ./poetry.lock ./pyproject.toml ./README.rst ./src /app/
 WORKDIR /app
@@ -90,7 +119,7 @@ RUN source /.venv/bin/activate \
 ##############################################
 # Main production build for the python thing #
 ##############################################
-FROM production as ocsprest
+FROM production AS ocsprest
 COPY --from=python_production_build /tmp/wheelhouse /tmp/wheelhouse
 WORKDIR /app
 # Install system level deps for running the package (not devel versions for building wheels)
@@ -112,7 +141,7 @@ ENTRYPOINT ["/usr/bin/tini", "--", "/ocsprest-entrypoint.sh"]
 ###########
 # Hacking #
 ###########
-FROM python_dev as devel_shell
+FROM python_dev AS devel_shell
 RUN apt-get update && apt-get install -y zsh jq \
     && sh -c "$(curl -fsSL https://raw.githubusercontent.com/ohmyzsh/ohmyzsh/master/tools/install.sh)" \
     && echo "source /root/.profile" >>/root/.zshrc \
