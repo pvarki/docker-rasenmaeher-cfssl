@@ -36,6 +36,11 @@ COPY ./files/cfssl-start.sh /cfssl-start.sh
 COPY ./files/ocsp-start.sh /ocsp-start.sh
 COPY --from=base /go/bin/goose /usr/bin/goose
 COPY --from=base /usr/bin/cfssl /usr/bin/cfssl
+COPY --from=base /usr/bin/cfssl-bundle /usr/bin/cfssl-bundle
+COPY --from=base /usr/bin/cfssl-certinfo /usr/bin/cfssl-certinfo
+COPY --from=base /usr/bin/cfssl-newkey /usr/bin/cfssl-newkey
+COPY --from=base /usr/bin/cfssl-scan /usr/bin/cfssl-scan
+COPY --from=base /usr/bin/cfssljson /usr/bin/cfssljson
 WORKDIR /opt/cfssl
 RUN apt-get update && apt-get install -y \
       jq \
