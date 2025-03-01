@@ -1,7 +1,6 @@
 FROM cfssl/cfssl AS cfssl
 ENV DEBIAN_FRONTEND=noninteractive
 
-COPY --from=hairyhenderson/gomplate:stable /gomplate /bin/gomplate
 COPY ./files/docker-entrypoint.sh /docker-entrypoint.sh
 COPY ./files/container-env.sh /container-env.sh
 RUN apt-get update && apt-get install -y \
@@ -27,14 +26,23 @@ CMD []
 SHELL ["/bin/bash", "-lc"]
 
 
-FROM base AS production
+FROM debian:bookworm-slim AS production
+COPY --from=hairyhenderson/gomplate:stable /gomplate /bin/gomplate
 COPY ./files/opt/cfssl /opt/cfssl
 COPY ./files/docker-entrypoint.sh /docker-entrypoint.sh
 COPY ./files/container-env.sh /container-env.sh
 COPY ./files/cfssl-init.sh /cfssl-init.sh
 COPY ./files/cfssl-start.sh /cfssl-start.sh
 COPY ./files/ocsp-start.sh /ocsp-start.sh
+COPY --from=base /go/bin/goose /usr/bin/goose
+COPY --from=base /usr/bin/cfssl /usr/bin/cfssl
 WORKDIR /opt/cfssl
+RUN apt-get update && apt-get install -y \
+      jq \
+      tini \
+    && apt-get autoremove -y \
+    && rm -rf /var/lib/apt/lists/* \
+    && true
 
 
 FROM production AS api
