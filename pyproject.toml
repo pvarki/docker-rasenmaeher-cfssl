@@ -1,6 +1,6 @@
 [tool.poetry]
 name = "ocsprest"
-version = "1.0.5"
+version = "1.0.6"
 description = ""
 authors = ["Eero af Heurlin <eero.afheurlin@iki.fi>"]
 readme = "README.rst"

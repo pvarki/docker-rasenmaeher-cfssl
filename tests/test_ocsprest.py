@@ -11,7 +11,7 @@ LOGGER = logging.getLogger(__name__)
 
 def test_version() -> None:
     """Make sure version matches expected"""
-    assert __version__ == "1.0.5"
+    assert __version__ == "1.0.6"
 
 
 def test_healthcheck(client: TestClient) -> None:
