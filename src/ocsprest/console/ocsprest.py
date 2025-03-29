@@ -1,4 +1,5 @@
 """CLI commands for the OCSP rest wrapper"""
+
 import asyncio
 import logging
 import json
