@@ -141,11 +141,11 @@ ENTRYPOINT ["/usr/bin/tini", "--", "/ocsprest-entrypoint.sh"]
 ###########
 # Hacking #
 ###########
-FROM python_dev AS devel_shell
-RUN apt-get update && apt-get install -y zsh jq \
+FROM python_base AS devel_shell
+WORKDIR /app
+RUN apt-get update && apt-get install -y zsh jq git vim \
     && sh -c "$(curl -fsSL https://raw.githubusercontent.com/ohmyzsh/ohmyzsh/master/tools/install.sh)" \
     && echo "source /root/.profile" >>/root/.zshrc \
-    && pip3 install git-up \
-    && echo "source /container-env.sh" >>/root/.profile \
+    && pip3 install --break-system-packages git-up \
     && true
 ENTRYPOINT ["/bin/zsh", "-l"]
