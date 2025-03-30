@@ -31,11 +31,11 @@ class RESTConfig(BaseSettings):
     )
     conf: Union[Path, str] = Field(
         alias="RUN_CA_CFSSL_CONF",
-        description="Union[Path, str] to the db config file",
+        description="Path to the db config file",
         default="/data/persistent/root_ca_cfssl.json",
     )
     dbconf: Union[Path, str] = Field(
-        alias="RUN_DB_CONFIG", description="Union[Path, str] to the db config file", default="/data/persistent/db.json"
+        alias="RUN_DB_CONFIG", description="Path to the db config file", default="/data/persistent/db.json"
     )
     respcrt: Union[Path, str] = Field(
         alias="RUN_OCSP_CERT", description="Responder cert to use", default="/data/persistent/ocsp.pem"
