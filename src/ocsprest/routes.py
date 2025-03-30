@@ -1,4 +1,5 @@
 """aiohttp routes"""
+
 from typing import List, Dict, Any
 import asyncio
 import logging
@@ -142,6 +143,7 @@ async def get_crl_pem(request: Request) -> FileResponse:
             detail={"success": False, "error": f"CFSSL CLI call to dump_crl failed, code {ret}. See server logs"},
         )
     cnf = RESTConfig.singleton()
+    cnf.crl = Path(cnf.crl)
     pem_path = cnf.crl.parent / f"{cnf.crl.stem}.pem"
     return FileResponse(pem_path, media_type="application/x-pem-file")
 
@@ -167,6 +169,7 @@ async def healthcheck(request: Request) -> Dict[str, Any]:
     retval = "success"
     grace = 15
     cnf = RESTConfig.singleton()
+    cnf.crl = Path(cnf.crl)
     modtime = time.time() - cnf.crl.stat().st_mtime
     LOGGER.debug("{} modified {} seconds ago".format(cnf.crl, modtime))
     if modtime > (cnf.crl_refresh + grace):

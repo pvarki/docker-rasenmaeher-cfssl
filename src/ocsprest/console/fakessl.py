@@ -1,4 +1,5 @@
 """fake cfssl for unit testing"""
+
 import logging
 
 import click

@@ -1,4 +1,5 @@
 """helpers"""
+
 from typing import Tuple, List, Optional
 import logging
 import asyncio
@@ -57,6 +58,7 @@ class CRLType(enum.IntEnum):
 def crlpaths(crltype: CRLType = CRLType.MERGED) -> Tuple[Path, Path]:
     """Path to CRL files by CRLType"""
     cnf = RESTConfig.singleton()
+    cnf.crl = Path(cnf.crl)
     der_path = cnf.crl.parent / f"{cnf.crl.stem}_{crltype.name.lower()}.der"
     pem_path = cnf.crl.parent / f"{cnf.crl.stem}_{crltype.name.lower()}.pem"
     return der_path, pem_path
@@ -65,6 +67,7 @@ def crlpaths(crltype: CRLType = CRLType.MERGED) -> Tuple[Path, Path]:
 async def merge_crl() -> int:
     """Merge CRL files"""
     cnf = RESTConfig.singleton()
+    cnf.crl = Path(cnf.crl)
     root_der, root_pem = crlpaths(CRLType.ROOT)
     intermediate_der, intermediate_pem = crlpaths(CRLType.INTERMEDIATE)
     retcodes = await asyncio.gather(dump_crl(CRLType.ROOT), dump_crl(CRLType.INTERMEDIATE))
@@ -83,6 +86,12 @@ async def merge_crl() -> int:
 async def dump_crl(crltype: CRLType = CRLType.MERGED) -> int:
     """Dump CRL to shared directory, triggering reloads for everyone interested in it is beyond us though"""
     cnf = RESTConfig.singleton()
+    cnf.crl = Path(cnf.crl)
+    cnf.rootcacrt = Path(cnf.rootcacrt)
+    cnf.rootcakey = Path(cnf.rootcakey)
+    cnf.cacrt = Path(cnf.cacrt)
+    cnf.cakey = Path(cnf.cakey)
+
     cafile: Optional[Path] = None
     cakey: Optional[Path] = None
 
