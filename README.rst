@@ -84,3 +84,12 @@ There is also a specific target for just dumping the openapi.json::
 
     docker build --ssh default --target openapi -t ocsprest:amd64-openapi .
     docker run --rm -it --name rasenmaeher_openapijson ocsprest:amd64-openapi
+
+Versioning
+----------
+
+Versioning is handled with bump-my-version_. To increment, use ``bump-my-version bump <patch/minor/major>``.
+
+You can use ``bump-my-version show-bump`` to see how each option would affect the version.
+
+.. _bump-my-version: https://github.com/callowayproject/bump-my-version
