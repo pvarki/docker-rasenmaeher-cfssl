@@ -10,7 +10,7 @@ All Deploy App services that need mTLS or signed certificates get them from cfss
 - **cfssl / ocsp:** CloudFlare CFSSL (Go binary, bundled image)
 - **ocsprest:** Python 3.11, FastAPI — thin wrapper adding `/healthcheck`
 - **Key lib:** libpvarki (internal)
-- **Testing:** pytest, tox (via ocsprest), pre-commit
+- **Testing:** pytest, tox (via ocsprest), prek (pre-commit-compatible runner)
 - **Container targets:** `api` (cfssl), `ocsp`, `ocsprest`, `openapi` (spec dump)
 
 ## Development Setup
@@ -43,9 +43,9 @@ docker run --rm -it -v $(pwd):/app $(echo $DOCKER_SSHAGENT) ocsprest:tox
 # Direct pytest inside devel_shell
 pytest tests/ -v
 
-# Pre-commit
-pre-commit install --install-hooks
-pre-commit run --all-files
+# Pre-commit (via prek)
+prek install --install-hooks
+prek run --all-files
 
 # Dump OpenAPI spec
 docker build --target openapi -t ocsprest:openapi .
@@ -54,7 +54,7 @@ docker run --rm ocsprest:openapi
 
 ## Code Conventions
 - `ocsprest` follows the same `CFSSL_` env prefix pattern via pydantic `BaseSettings`
-- Pre-commit enforced; pylint rules from root `pylintrc`
+- Pre-commit hooks enforced via `prek`; pylint rules from root `pylintrc`
 
 ## Architecture Notes
 **Three components, three ports:**

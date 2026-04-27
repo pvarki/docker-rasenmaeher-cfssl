@@ -31,7 +31,7 @@ jobs:
           run: uv sync --frozen
         - name: Do pre-commit checks (black, lint, mypy)
           run: |
-            uv run pre-commit run --all-files
+            uv run prek run --all-files
         - name: Test with pytest
           run: |
             uv run py.test -v --junitxml=pytest.xml
