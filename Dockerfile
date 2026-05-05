@@ -19,7 +19,7 @@ RUN echo "deb http://deb.debian.org/debian bookworm-backports main" >/etc/apt/so
     && apt-get install -y -t bookworm-backports golang \
     && apt-get autoremove -y \
     && rm -rf /var/lib/apt/lists/* \
-    && /usr/bin/go install bitbucket.org/liamstask/goose/cmd/goose@latest \
+    && /usr/bin/go install github.com/pressly/goose/v3/cmd/goose@v3.17.0 \
     && mkdir -p /opt/cfssl/persistent/certdb/sqlite/migrations \
     && true
 CMD []

@@ -170,7 +170,11 @@ async def healthcheck(request: Request) -> Dict[str, Any]:
     grace = 15
     cnf = RESTConfig.singleton()
     cnf.crl = Path(cnf.crl)
-    modtime = time.time() - cnf.crl.stat().st_mtime
+    try:
+        modtime = time.time() - cnf.crl.stat().st_mtime
+    except FileNotFoundError:
+        LOGGER.warning("{} does not exist yet".format(cnf.crl))
+        return {"healthcheck": "crlfail"}
     LOGGER.debug("{} modified {} seconds ago".format(cnf.crl, modtime))
     if modtime > (cnf.crl_refresh + grace):
         LOGGER.warning("{} modified too long ago ({}s)".format(cnf.crl, modtime))

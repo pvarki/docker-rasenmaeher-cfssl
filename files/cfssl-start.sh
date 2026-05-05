@@ -8,7 +8,7 @@ set -e
 #
 pushd "${CFSSL_PERSISTENT_FOLDER}" > /dev/null
 echo "$(date) --- Starting sqlite goose addong"
-goose -path certdb/sqlite up
+goose -dir certdb/sqlite/migrations sqlite3 certstore_development.db up
 echo "$(date) --- Running 'cfssl serve'"
 cfssl serve -address=$CFSSL_BIND_ADDRESS -port $CFSSL_BIND_PORT \
   -ca "${RUN_INTER_CA}" -ca-key "${RUN_INTER_CA_KEY}" \
