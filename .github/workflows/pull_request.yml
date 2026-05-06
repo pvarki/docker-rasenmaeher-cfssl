@@ -2,6 +2,12 @@ on:
   pull_request:
 
 jobs:
+  version-check:
+    name: Check version increment
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v6
+      - uses: pvarki/config-ci-library/.github/actions/validate-bumpversion@main
   pre-commit:
     name: Run pre-commit checks
     runs-on: ubuntu-latest
@@ -65,6 +71,7 @@ jobs:
     name: Publish OCSP REST build target
     needs:
       [
+        "version-check",
         "pre-commit",
         "test",
         "snyk-test",
@@ -106,6 +113,7 @@ jobs:
     name: Publish CFSSL build target
     needs:
       [
+        "version-check",
         "pre-commit",
         "test",
         "snyk-test",
