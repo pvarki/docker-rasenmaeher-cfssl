@@ -11,7 +11,7 @@ jobs:
       - uses: pvarki/config-ci-library/.github/actions/setup-python@main
       - uses: pvarki/config-ci-library/.github/actions/snyk-monitor@main
         with:
-          snyk-org: deployapp-products
+          snyk-org: deployapp-core-services
           snyk-token: ${{ secrets.SNYK_TOKEN }}
 
   publish-ocsprest:
