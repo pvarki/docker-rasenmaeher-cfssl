@@ -10,33 +10,11 @@ from pathlib import Path
 from cryptography import x509
 from cryptography.hazmat.primitives import serialization
 
+from libpvarki.shell import call_cmd
+
 from .config import RESTConfig
 
 LOGGER = logging.getLogger(__name__)
-
-
-# FIXME: switch to the libpvarki version
-async def call_cmd(cmd: str, timeout: int = 10) -> Tuple[int, str, str]:
-    """Do the boilerplate for calling cmd and reporting output/return code"""
-    cnf = RESTConfig.singleton()
-    cwd_cmd = f"cd {cnf.data_path} && {cmd}"
-    LOGGER.debug("Calling create_subprocess_shell(({})".format(cwd_cmd))
-    process = await asyncio.create_subprocess_shell(
-        cwd_cmd,
-        stdout=asyncio.subprocess.PIPE,
-        stderr=asyncio.subprocess.PIPE,
-    )
-    out, err = await asyncio.wait_for(process.communicate(), timeout=timeout)
-    if err:
-        LOGGER.warning(err)
-    LOGGER.info(out)
-    assert isinstance(process.returncode, int)  # at this point it is, keep mypy happy
-    if process.returncode != 0:
-        LOGGER.error("{} returned nonzero code: {} (process: {})".format(cmd, process.returncode, process))
-        LOGGER.error(err)
-        LOGGER.error(out)
-
-    return process.returncode, out.decode("utf-8"), err.decode("utf-8")
 
 
 def cfssl_loglevel() -> int:
@@ -70,7 +48,9 @@ async def merge_crl() -> int:
     cnf.crl = Path(cnf.crl)
     root_der, root_pem = crlpaths(CRLType.ROOT)
     intermediate_der, intermediate_pem = crlpaths(CRLType.INTERMEDIATE)
-    retcodes = await asyncio.gather(dump_crl(CRLType.ROOT), dump_crl(CRLType.INTERMEDIATE))
+    retcodes = await asyncio.gather(
+        dump_crl(CRLType.ROOT), dump_crl(CRLType.INTERMEDIATE)
+    )
     for ret in retcodes:
         if ret != 0:
             return ret

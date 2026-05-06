@@ -91,7 +91,7 @@ WORKDIR /pysetup
 COPY ./uv.lock ./pyproject.toml ./README.rst /pysetup/
 # Install basic requirements (utilizing an internal docker wheelhouse if available)
 RUN uv export --frozen --no-dev --no-emit-project --no-hashes --format requirements-txt -o /tmp/requirements.txt \
-    && pip3 wheel --wheel-dir=/tmp/wheelhouse -r /tmp/requirements.txt \
+    && pip3 wheel --wheel-dir=/tmp/wheelhouse --extra-index-url https://nexus.dev.pvarki.fi/repository/pypilocal/simple/ -r /tmp/requirements.txt \
     && virtualenv /.venv && . /.venv/bin/activate && echo '. /.venv/bin/activate' >>/root/.profile \
     && pip3 install --no-deps --find-links=/tmp/wheelhouse/ /tmp/wheelhouse/*.whl \
     && true
