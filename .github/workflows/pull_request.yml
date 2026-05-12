@@ -56,6 +56,53 @@ jobs:
           snyk-org: deployapp-core-services
           snyk-token: ${{ secrets.SNYK_TOKEN }}
 
+  docker-build-and-verify-ocsp:
+    name: Docker build and verification for OCSP build target
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v6
+      - run: mkdir -p /tmp/ca_public && touch /tmp/ca_public/crl.der
+      - run: docker build --target ocsp -t rasenmaeher_ocsp .
+      - run: docker run -d -p 8889:8889 -e CFSSL_OCSP_BIND_PORT=8889 -v /tmp/ca_public:/ca_public --name rasenmaeher_ocsp rasenmaeher_ocsp
+      - run: sleep 60 && docker logs rasenmaeher_ocsp
+      - run: echo 'verify ocsp is running' && docker inspect --format='{{.State.Running}}' rasenmaeher_ocsp | grep true
+      - run: |
+          CODE=$(curl -s -o /dev/null -w "%{http_code}" http://localhost:8889/)
+          echo "HTTP status: $CODE"
+          [ "$CODE" != "000" ]
+  publish-ocsp:
+    name: Publish OCSP build target
+    needs:
+      [
+        "version-check",
+        "pre-commit",
+        "test",
+        "snyk-test",
+        "docker-build-and-verify-cfssl",
+        "docker-build-and-verify-ocsprest",
+        "docker-build-and-verify-ocsp",
+      ]
+    runs-on: ubuntu-latest # arc-runner-set
+    permissions:
+      contents: read
+      packages: write
+    steps:
+      - uses: actions/checkout@v6
+        with:
+          submodules: recursive
+      - name: Publish Docker image
+        uses: pvarki/config-ci-library/.github/actions/publish-image@main
+        with:
+          product: ocsp
+          component: api
+          target: ocsp
+          dockerhub-username: ${{ vars.DOCKERHUB_USERNAME }}
+          dockerhub-token: ${{ secrets.DOCKERHUB_TOKEN }}
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+          acr-repo: ${{ vars.ACR_REPO }}
+          acr-username: ${{ vars.ACR_USERNAME }}
+          acr-token: ${{ secrets.ACR_TOKEN }}
+
   docker-build-and-verify-ocsprest:
     name: Docker build and verification for OCSP REST build target
     runs-on: ubuntu-latest
@@ -77,6 +124,7 @@ jobs:
         "snyk-test",
         "docker-build-and-verify-cfssl",
         "docker-build-and-verify-ocsprest",
+        "docker-build-and-verify-ocsp",
       ]
     runs-on: ubuntu-latest # arc-runner-set
     permissions:
@@ -119,6 +167,7 @@ jobs:
         "snyk-test",
         "docker-build-and-verify-cfssl",
         "docker-build-and-verify-ocsprest",
+        "docker-build-and-verify-ocsp",
       ]
     runs-on: ubuntu-latest # arc-runner-set
     permissions:
