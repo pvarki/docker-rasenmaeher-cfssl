@@ -129,7 +129,7 @@ fi
 #
 # Run goose init (copy files), use alternative files if one is defined in env vars...
 #
-if [[ ! -f "${CFSSL_PERSISTENT_FOLDER}/certdb/sqlite/dbconf.yml" ]]
+if [[ ! -f "${CFSSL_PERSISTENT_FOLDER}/certdb/sqlite/migrations/001_CreateCertificates.sql" ]]
 then
     echo "$(date) --- running first time goose init tasks..."
     mkdir -p "${CFSSL_PERSISTENT_FOLDER}/certdb/sqlite/migrations"
@@ -139,13 +139,6 @@ then
         cp "${INIT_GOOSE_DBJSON_FILE}" "${CFSSL_PERSISTENT_FOLDER}/db.json"
     else
         cp "/opt/cfssl/template/goose/db.json" "${CFSSL_PERSISTENT_FOLDER}/db.json"
-    fi
-
-    if [ "${INIT_GOOSE_DBCONF_FILE}" != "NA" ]
-    then
-        cp "${INIT_GOOSE_DBCONF_FILE}" "${CFSSL_PERSISTENT_FOLDER}/certdb/sqlite/dbconf.yml"
-    else
-        cp "/opt/cfssl/template/goose/dbconf.yml" "${CFSSL_PERSISTENT_FOLDER}/certdb/sqlite/dbconf.yml"
     fi
 
     if [ "${INIT_GOOSE_CREATECERTIFICATES_SQL_FILE}" != "NA" ]

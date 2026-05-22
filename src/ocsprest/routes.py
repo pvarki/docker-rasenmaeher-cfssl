@@ -16,7 +16,9 @@ from fastapi.responses import FileResponse
 
 from ocsprest import __version__
 from .config import RESTConfig
-from .helpers import call_cmd, cfssl_loglevel, dump_crl, refresh_oscp
+from .helpers import cfssl_loglevel, dump_crl, refresh_oscp
+
+from libpvarki.shell import call_cmd
 
 LOGGER = logging.getLogger(__name__)
 ROUTER = APIRouter()
@@ -59,7 +61,10 @@ async def csr_sign(request: Request) -> Dict[str, Any]:
         if ret_sign != 0:
             raise HTTPException(
                 status_code=500,
-                detail={"success": False, "error": f"CFSSL CLI call to sign failed, code {ret_sign}. See server logs"},
+                detail={
+                    "success": False,
+                    "error": f"CFSSL CLI call to sign failed, code {ret_sign}. See server logs",
+                },
             )
         resp_sign = json.loads(out_sign)
         if not data.get("bundle", True):
@@ -78,7 +83,9 @@ async def csr_sign(request: Request) -> Dict[str, Any]:
         cmd_bundle = " ".join(args_bundle)
         ret_bundle, out_bundle, _ = await call_cmd(cmd_bundle)
         if ret_bundle != 0:
-            LOGGER.error("CFSSL CLI call to bundle failed, returning the signed cert anyway")
+            LOGGER.error(
+                "CFSSL CLI call to bundle failed, returning the signed cert anyway"
+            )
             return {"result": {"certificate": resp_sign["cert"].replace("\n", "\\n")}}
         resp_bundle = json.loads(out_bundle)
         return {"result": {"certificate": resp_bundle["bundle"].replace("\n", "\\n")}}
@@ -115,7 +122,10 @@ async def ocsp_sign_one(request: Request) -> Dict[str, Any]:
         if ret != 0:
             raise HTTPException(
                 status_code=500,
-                detail={"success": False, "error": f"CFSSL CLI call to ocspsign failed, code {ret}. See server logs"},
+                detail={
+                    "success": False,
+                    "error": f"CFSSL CLI call to ocspsign failed, code {ret}. See server logs",
+                },
             )
         # TODO: Should we return the signed OCSP response ? can rmapi do something with it ??
         return {"success": True}
@@ -140,7 +150,10 @@ async def get_crl_pem(request: Request) -> FileResponse:
     if ret != 0:
         raise HTTPException(
             status_code=500,
-            detail={"success": False, "error": f"CFSSL CLI call to dump_crl failed, code {ret}. See server logs"},
+            detail={
+                "success": False,
+                "error": f"CFSSL CLI call to dump_crl failed, code {ret}. See server logs",
+            },
         )
     cnf = RESTConfig.singleton()
     cnf.crl = Path(cnf.crl)
@@ -156,7 +169,10 @@ async def get_crl_der(request: Request) -> FileResponse:
     if ret != 0:
         raise HTTPException(
             status_code=500,
-            detail={"success": False, "error": f"CFSSL CLI call to dump_crl failed, code {ret}. See server logs"},
+            detail={
+                "success": False,
+                "error": f"CFSSL CLI call to dump_crl failed, code {ret}. See server logs",
+            },
         )
     der_path = RESTConfig.singleton().crl
     return FileResponse(der_path, media_type="application/pkix-crl")
@@ -170,7 +186,11 @@ async def healthcheck(request: Request) -> Dict[str, Any]:
     grace = 15
     cnf = RESTConfig.singleton()
     cnf.crl = Path(cnf.crl)
-    modtime = time.time() - cnf.crl.stat().st_mtime
+    try:
+        modtime = time.time() - cnf.crl.stat().st_mtime
+    except FileNotFoundError:
+        LOGGER.warning("{} does not exist yet".format(cnf.crl))
+        return {"healthcheck": "crlfail"}
     LOGGER.debug("{} modified {} seconds ago".format(cnf.crl, modtime))
     if modtime > (cnf.crl_refresh + grace):
         LOGGER.warning("{} modified too long ago ({}s)".format(cnf.crl, modtime))
@@ -180,7 +200,9 @@ async def healthcheck(request: Request) -> Dict[str, Any]:
 
 def get_app() -> FastAPI:
     """Get the app"""
-    app = FastAPI(docs_url="/api/docs", openapi_url="/api/openapi.json", version=__version__)
+    app = FastAPI(
+        docs_url="/api/docs", openapi_url="/api/openapi.json", version=__version__
+    )
     app.include_router(router=ROUTER, prefix="/api/v1")
     LOGGER.debug("Returning {}".format(app))
     return app

@@ -1,4 +1,4 @@
 {
-  "data_source": "certstore_development.db",
+  "data_source": "/data/persistent/certstore_development.db",
   "driver": "sqlite3"
 }

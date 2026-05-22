@@ -13,12 +13,12 @@ for bringin up all the other services rasenmaeher-api depends on
 Development
 -----------
 
-The cfssl itself we can't do much about but the FastAPI thing uses poetry and in
-any case use pre-commit::
+The cfssl itself we can't do much about but the FastAPI thing uses uv and in
+any case use prek (a pre-commit-compatible runner)::
 
-    poetry install
-    pre-commit install --install-hooks
-    pre-commit run --all-files
+    uv sync
+    uv run prek install --install-hooks
+    uv run prek run --all-files
 
 
 Docker
@@ -60,15 +60,16 @@ Or just pwd if working under separate checkout instead of the integration repo.
 pre-commit considerations
 ^^^^^^^^^^^^^^^^^^^^^^^^^
 
-If working in Docker instead of native env you need to run the pre-commit checks in docker too::
+We use prek (a pre-commit-compatible runner).
+If working in Docker instead of native env you need to run the checks in docker too::
 
-    docker exec -i ocsprest_devel /bin/bash -c "pre-commit install --install-hooks"
-    docker exec -i ocsprest_devel /bin/bash -c "pre-commit run --all-files"
+    docker exec -i ocsprest_devel /bin/bash -c "prek install --install-hooks"
+    docker exec -i ocsprest_devel /bin/bash -c "prek run --all-files"
 
 You need to have the container running, see above. Or alternatively use the docker run syntax but using
 the running container is faster::
 
-    docker run --rm -it -v `pwd`":/app" ocsprest:devel_shell -c "pre-commit run --all-files"
+    docker run --rm -it -v `pwd`":/app" ocsprest:devel_shell -c "prek run --all-files"
 
 Production docker
 ^^^^^^^^^^^^^^^^^
@@ -83,3 +84,12 @@ There is also a specific target for just dumping the openapi.json::
 
     docker build --ssh default --target openapi -t ocsprest:amd64-openapi .
     docker run --rm -it --name rasenmaeher_openapijson ocsprest:amd64-openapi
+
+Versioning
+----------
+
+Versioning is handled with bump-my-version_. To increment, use ``bump-my-version bump <patch/minor/major>``.
+
+You can use ``bump-my-version show-bump`` to see how each option would affect the version.
+
+.. _bump-my-version: https://github.com/callowayproject/bump-my-version

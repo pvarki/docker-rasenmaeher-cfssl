@@ -19,7 +19,7 @@ RUN echo "deb http://deb.debian.org/debian bookworm-backports main" >/etc/apt/so
     && apt-get install -y -t bookworm-backports golang \
     && apt-get autoremove -y \
     && rm -rf /var/lib/apt/lists/* \
-    && /usr/bin/go install bitbucket.org/liamstask/goose/cmd/goose@latest \
+    && /usr/bin/go install github.com/pressly/goose/v3/cmd/goose@v3.17.0 \
     && mkdir -p /opt/cfssl/persistent/certdb/sqlite/migrations \
     && true
 CMD []
@@ -70,10 +70,10 @@ ENV \
   # pip:
   PIP_NO_CACHE_DIR=off \
   PIP_DISABLE_PIP_VERSION_CHECK=on \
-  PIP_DEFAULT_TIMEOUT=100 \
-  # poetry:
-  POETRY_VERSION=1.7.0
+  PIP_DEFAULT_TIMEOUT=100
 SHELL ["/bin/bash", "-lc"]
+
+COPY --from=ghcr.io/astral-sh/uv:0.11.6 /uv /uvx /bin/
 
 RUN apt-get update \
     && apt-get install -y \
@@ -84,19 +84,14 @@ RUN apt-get update \
       python3-wheel \
     && apt-get autoremove -y \
     && rm -rf /var/lib/apt/lists/* \
-    # Installing `poetry` package manager:
-    && curl -sSL https://install.python-poetry.org | python3 - \
-    && echo 'export PATH="/root/.local/bin:$PATH"' >>/root/.profile \
-    && export PATH="/root/.local/bin:$PATH" \
     && true
 
 # Copy only requirements, to cache them in docker layer:
 WORKDIR /pysetup
-COPY ./poetry.lock ./pyproject.toml ./README.rst /pysetup/
+COPY ./uv.lock ./pyproject.toml ./README.rst /pysetup/
 # Install basic requirements (utilizing an internal docker wheelhouse if available)
-RUN pip3 install --break-system-packages wheel virtualenv poetry-plugin-export \
-    && poetry export -f requirements.txt --without-hashes -o /tmp/requirements.txt \
-    && pip3 wheel --wheel-dir=/tmp/wheelhouse  -r /tmp/requirements.txt \
+RUN uv export --frozen --no-dev --no-emit-project --no-hashes --format requirements-txt -o /tmp/requirements.txt \
+    && pip3 wheel --wheel-dir=/tmp/wheelhouse --extra-index-url https://nexus.dev.pvarki.fi/repository/pypilocal/simple/ -r /tmp/requirements.txt \
     && virtualenv /.venv && . /.venv/bin/activate && echo '. /.venv/bin/activate' >>/root/.profile \
     && pip3 install --no-deps --find-links=/tmp/wheelhouse/ /tmp/wheelhouse/*.whl \
     && true
@@ -106,13 +101,13 @@ RUN pip3 install --break-system-packages wheel virtualenv poetry-plugin-export \
 #####################################
 FROM python_base AS python_production_build
 # Only files needed by production setup
-COPY ./poetry.lock ./pyproject.toml ./README.rst ./src /app/
+COPY ./uv.lock ./pyproject.toml ./README.rst ./src /app/
 WORKDIR /app
-# Build the wheel package with poetry and add it to the wheelhouse
+# Build the wheel package with uv and add it to the wheelhouse
 RUN source /.venv/bin/activate \
     # wtf docker copy ??
     && mkdir src && mv ocsprest src/ \
-    && poetry build -f wheel --no-interaction --no-ansi \
+    && uv build --wheel \
     && cp dist/*.whl /tmp/wheelhouse \
     && true
 
