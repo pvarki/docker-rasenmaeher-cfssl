@@ -31,6 +31,8 @@ ROUTER = APIRouter()
 async def refresh_all(request: Request) -> Dict[str, Any]:
     """calls cfssl ocsprefresh"""
     _ = request
+    if not RESTConfig.singleton().ocsp_enabled:
+        return {"success": True, "skipped": "ocsp disabled"}
     # Don't bother waiting for the result
     TaskMaster.singleton().create_task(refresh_oscp())
     return {"success": True}
@@ -220,7 +222,11 @@ async def refresher() -> None:
     try:
         while True:
             try:
-                await asyncio.gather(dump_crl(), refresh_oscp())
+                cnf = RESTConfig.singleton()
+                tasks = [dump_crl()]
+                if cnf.ocsp_enabled:
+                    tasks.append(refresh_oscp())
+                await asyncio.gather(*tasks)
             except asyncio.TimeoutError as exc:
                 LOGGER.warning("Ignoring timeout: {}".format(exc))
             await asyncio.sleep(RESTConfig.singleton().crl_refresh)

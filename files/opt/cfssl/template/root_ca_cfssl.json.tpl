@@ -2,9 +2,11 @@
 {
   "signing": {
     "default": {
-      "expiry": "{{ print $default_expiry }}",
-      "ocsp_url": "https://{{ getenv "OCSP_HOST" "localmaeher.dev.pvarki.fi" }}:{{ getenv "OCSP_PORT" "4439" }}/ca/ocsp",
-      "crl_url": "https://{{ getenv "OCSP_HOST" "localmaeher.dev.pvarki.fi" }}:{{ getenv "OCSP_PORT" "4439" }}/ca/crl/crl.pem"
+      "expiry": "{{ print $default_expiry }}"
+      {{ if getenv "CFSSL_OCSP_ENABLED" "true" | eq "true" -}}
+      ,"ocsp_url": "https://{{ getenv "OCSP_HOST" "localmaeher.dev.pvarki.fi" }}:{{ getenv "OCSP_PORT" "4439" }}/ca/ocsp"
+      {{- end }}
+      ,"crl_url": "https://{{ getenv "OCSP_HOST" "localmaeher.dev.pvarki.fi" }}:{{ getenv "OCSP_PORT" "4439" }}/ca/crl/crl.pem"
     },
     "profiles": {
       "ocsp": {

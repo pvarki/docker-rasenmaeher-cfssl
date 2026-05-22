@@ -71,6 +71,11 @@ class RESTConfig(BaseSettings):
     crl_refresh: int = Field(
         description="Interval to dump CRL via out background task", default=900
     )
+    ocsp_enabled: bool = Field(
+        default=True,
+        alias="CFSSL_OCSP_ENABLED",
+        description="Enable OCSP responder and refresh",
+    )
 
     ci: bool = Field(default=False, alias="CI", description="Are we running in CI")
     model_config = SettingsConfigDict(

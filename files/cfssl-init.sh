@@ -75,31 +75,33 @@ then
         exit
     fi
 
-    # Check the OCSP config source. It's either json string or file and copy it to place
-    if [ "$INIT_OCSP_JSON_STRING" != "NA" ]
+    if [ "$CFSSL_OCSP_ENABLED" = "true" ]
     then
-        echo "$(date) --- Using INIT_INTER_CA_JSON_STRING variables as base config"
-        if echo $INIT_OCSP_JSON_STRING | jq > /dev/null
+        # Check the OCSP config source. It's either json string or file and copy it to place
+        if [ "$INIT_OCSP_JSON_STRING" != "NA" ]
         then
-            echo "${INIT_OCSP_JSON_STRING}" > "$RUN_OCSP_CONF"
-        else
-            echo $INIT_OCSP_JSON_STRING | jq
-            echo "$(date) --- ERROR - INIT_OCSP_JSON_STRING is not valid JSON"
-            exit
-        fi
+            echo "$(date) --- Using INIT_INTER_CA_JSON_STRING variables as base config"
+            if echo $INIT_OCSP_JSON_STRING | jq > /dev/null
+            then
+                echo "${INIT_OCSP_JSON_STRING}" > "$RUN_OCSP_CONF"
+            else
+                echo $INIT_OCSP_JSON_STRING | jq
+                echo "$(date) --- ERROR - INIT_OCSP_JSON_STRING is not valid JSON"
+                exit
+            fi
 
-    else
-        echo "$(date) --- Using file defined in INIT_OCSP_JSON_FILE as base config"
-        if gomplate -f  "$INIT_OCSP_JSON_FILE" | jq > /dev/null
-        then
-            gomplate -f "$INIT_OCSP_JSON_FILE" | jq > "$RUN_OCSP_CONF"
         else
-            gomplate -f "$INIT_OCSP_JSON_FILE" | jq
-            echo "$(date) --- ERROR - INIT_OCSP_JSON_FILE doesnt contain valid JSON"
-            exit
+            echo "$(date) --- Using file defined in INIT_OCSP_JSON_FILE as base config"
+            if gomplate -f  "$INIT_OCSP_JSON_FILE" | jq > /dev/null
+            then
+                gomplate -f "$INIT_OCSP_JSON_FILE" | jq > "$RUN_OCSP_CONF"
+            else
+                gomplate -f "$INIT_OCSP_JSON_FILE" | jq
+                echo "$(date) --- ERROR - INIT_OCSP_JSON_FILE doesnt contain valid JSON"
+                exit
+            fi
         fi
     fi
-
 
 
     # Generate new CA files
@@ -109,16 +111,22 @@ then
     cfssl gencert -initca "${RUN_INTER_CA_CONF}" | cfssljson -bare init_intermediate_ca
     cfssl sign -ca init_ca.pem -ca-key init_ca-key.pem -config "${RUN_CA_CFSSL_CONF}" -profile intermediate_ca init_intermediate_ca.csr | cfssljson -bare init_intermediate_ca
 
-    # Generate OSCP certs
-    cfssl gencert -ca init_intermediate_ca.pem -ca-key init_intermediate_ca-key.pem -config "${RUN_CA_CFSSL_CONF}" -profile="ocsp" "$RUN_OCSP_CONF" | cfssljson -bare server-ocsp -
+    if [ "$CFSSL_OCSP_ENABLED" = "true" ]
+    then
+        # Generate OCSP certs
+        cfssl gencert -ca init_intermediate_ca.pem -ca-key init_intermediate_ca-key.pem -config "${RUN_CA_CFSSL_CONF}" -profile="ocsp" "$RUN_OCSP_CONF" | cfssljson -bare server-ocsp -
+    fi
 
     # Copy temporary CA files to persistent path
     cp init_ca.pem "${RUN_CA}"
     cp init_ca-key.pem "${RUN_INTER_CA_KEY}"
     cp init_intermediate_ca.pem "${RUN_INTER_CA}"
     cp init_intermediate_ca-key.pem "${RUN_INTER_CA_KEY}"
-    cp server-ocsp.pem "${RUN_OCSP_CERT}"
-    cp server-ocsp-key.pem "${RUN_OCSP_KEY}"
+    if [ "$CFSSL_OCSP_ENABLED" = "true" ]
+    then
+        cp server-ocsp.pem "${RUN_OCSP_CERT}"
+        cp server-ocsp-key.pem "${RUN_OCSP_KEY}"
+    fi
 
     popd > /dev/null
     echo "$(date) --- Init complete..."
