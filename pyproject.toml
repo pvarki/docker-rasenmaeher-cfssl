@@ -1,6 +1,6 @@
 [project]
 name = "ocsprest"
-version = "1.0.7+260427"
+version = "1.0.7+260612"
 description = ""
 authors = [{name = "Eero af Heurlin", email = "eero.afheurlin@iki.fi"}]
 readme = "README.rst"

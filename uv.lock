@@ -1279,7 +1279,7 @@ wheels = [
 
 [[package]]
 name = "ocsprest"
-version = "1.0.7+260427"
+version = "1.0.7+260612"
 source = { editable = "." }
 dependencies = [
     { name = "aiohttp", extra = ["speedups"] },
