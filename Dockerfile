@@ -73,7 +73,7 @@ ENV \
   PIP_DEFAULT_TIMEOUT=100
 SHELL ["/bin/bash", "-lc"]
 
-COPY --from=ghcr.io/astral-sh/uv:0.11.6 /uv /uvx /bin/
+COPY --from=ghcr.io/astral-sh/uv:0.13.6 /uv /uvx /bin/
 
 RUN apt-get update \
     && apt-get install -y \
