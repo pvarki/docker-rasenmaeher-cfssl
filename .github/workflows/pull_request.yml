@@ -82,7 +82,7 @@ jobs:
         "docker-build-and-verify-ocsprest",
         "docker-build-and-verify-ocsp",
       ]
-    runs-on: ubuntu-latest # arc-runner-set
+    runs-on: arc-runner-set
     permissions:
       contents: read
       packages: write
@@ -125,7 +125,7 @@ jobs:
         "docker-build-and-verify-ocsprest",
         "docker-build-and-verify-ocsp",
       ]
-    runs-on: ubuntu-latest # arc-runner-set
+    runs-on: arc-runner-set
     permissions:
       contents: read
       packages: write
@@ -167,7 +167,7 @@ jobs:
         "docker-build-and-verify-ocsprest",
         "docker-build-and-verify-ocsp",
       ]
-    runs-on: ubuntu-latest # arc-runner-set
+    runs-on: arc-runner-set
     permissions:
       contents: read
       packages: write
