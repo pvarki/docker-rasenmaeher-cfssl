@@ -17,7 +17,7 @@ jobs:
 
   publish-ocsp:
     name: Publish OCSP build target
-    runs-on: ubuntu-latest # arc-runner-set
+    runs-on: arc-runner-set
     permissions:
       contents: read
       packages: write
@@ -40,7 +40,7 @@ jobs:
 
   publish-ocsprest:
     name: Publish OCSP REST build target
-    runs-on: ubuntu-latest # arc-runner-set
+    runs-on: arc-runner-set
     permissions:
       contents: read
       packages: write
@@ -63,7 +63,7 @@ jobs:
 
   publish-cfssl:
     name: Publish CFSSL build target
-    runs-on: ubuntu-latest # arc-runner-set
+    runs-on: arc-runner-set
     permissions:
       contents: read
       packages: write
